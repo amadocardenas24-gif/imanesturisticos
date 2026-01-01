@@ -3,104 +3,101 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiencia RA Corregida</title>
-    <!-- Librerías de MindAR y AFRAME [3] -->
+    <title>RA Animales - Corregido</title>
+    <!-- Librerías de MindAR y AFRAME según documentación oficial [3] -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de inicio para evitar el bloqueo de video del navegador */
+        /* Pantalla de inicio para evitar el bloqueo del navegador */
         #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 2000; display: flex;
+            background: #ffffff; z-index: 2000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* ANIMACIÓN: Rotación horizontal de derecha a izquierda */
-        @keyframes girar-h {
+        /* Animación de rotación de derecha a izquierda para la portada */
+        @keyframes rotar-h {
             from { transform: perspective(600px) rotateY(0deg); }
             to { transform: perspective(600px) rotateY(-360deg); }
         }
 
-        #foto-portada {
+        #img-portada {
             width: 250px; height: 250px; border-radius: 50%;
             object-fit: cover; margin-bottom: 20px;
-            animation: girar-h 5s linear infinite; /* Rotación solicitada */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: rotar-h 5s linear infinite;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        button {
-            padding: 15px 30px; font-size: 18px; cursor: pointer;
-            background: #007bff; color: white; border: none; border-radius: 25px;
+        #btn-iniciar {
+            padding: 15px 35px; font-size: 18px; cursor: pointer;
+            background: #28a745; color: white; border: none; border-radius: 50px;
+            font-weight: bold;
         }
 
-        /* Botón Pantalla Completa */
-        #btn-full {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 10px 20px; background: rgba(0,0,0,0.6); color: white;
-            border: 1px solid white; border-radius: 10px; z-index: 1000;
-            display: none; cursor: pointer;
+        /* Botón de Pantalla Completa */
+        #btn-fs {
+            position: fixed; bottom: 20px; right: 20px;
+            padding: 12px 20px; background: rgba(0,0,0,0.7);
+            color: white; border: 1px solid white; border-radius: 10px;
+            z-index: 1000; display: none; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
     <div id="pantalla-inicio">
-        <!-- Imagen de portada cargada desde tu raíz -->
-        <img id="foto-portada" src="./portada.jpg" alt="Portada">
-        <button id="btn-start">EMPEZAR REPRODUCCIÓN</button>
+        <!-- Se asume portada.jpg en la raíz -->
+        <img id="img-portada" src="./portada.jpg" alt="Portada">
+        <button id="btn-iniciar">EMPEZAR</button>
     </div>
 
-    <button id="btn-full">PANTALLA COMPLETA</button>
+    <button id="btn-fs">PANTALLA COMPLETA</button>
 
-    <!-- Escena MindAR [3]. Se usa autoStart para inicializar la cámara -->
+    <!-- Configuración MindAR para rastreo de imagen e integración AFRAME [3] -->
     <a-scene mindar-image="imageTargetSrc: ./marker.mind; autoStart: true;" 
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <!-- Video 'asset.mp4' identificado en tus archivos [4] -->
-            <video id="vid" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
+            <!-- Usando el video 'asset.mp4' de tu carpeta ar_experience [2] -->
+            <video id="videoAsset" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
-        <!-- Cámara con el video FIJO (HUD) para que se vea sin marcador -->
+        <!-- Cámara con el video FIJO frente al usuario -->
         <a-camera position="0 0 0" look-controls="enabled: false">
-            <!-- 'shader: flat' y position '0 0 -1' para asegurar que se vea la imagen -->
-            <a-video id="video-ar" src="#vid" width="1" height="0.6" 
+            <!-- Se añade 'material="shader: flat"' y posición -1 para que la imagen sea visible -->
+            <a-video id="videoHUD" src="#videoAsset" width="1" height="0.6" 
                      position="0 0 -1" material="shader: flat;" visible="false"></a-video>
         </a-camera>
 
-        <!-- Mantenemos la entidad para evitar errores de la librería [3] -->
-        <a-entity id="target0" mindar-image-target="targetIndex: 0"></a-entity>
+        <!-- Entidad requerida para MindAR aunque se use modo sin marcador [3] -->
+        <a-entity mindar-image-target="targetIndex: 0"></a-entity>
     </a-scene>
 
     <script>
-        const btnStart = document.getElementById('btn-start');
-        const btnFull = document.getElementById('btn-full');
-        const videoFile = document.getElementById('vid');
-        const videoAR = document.getElementById('video-ar');
+        const btnInicia = document.getElementById('btn-iniciar');
+        const btnFS = document.getElementById('btn-fs');
+        const v = document.getElementById('videoAsset');
+        const vAR = document.getElementById('videoHUD');
 
-        // Al hacer clic, el video aparece y se reproduce directamente
-        btnStart.onclick = () => {
+        // Función para activar el video visualmente y el audio
+        btnInicia.onclick = () => {
             document.getElementById('pantalla-inicio').style.display = 'none';
-            
-            // Hacer el video visible y darle play (Soluciona el audio sin imagen)
-            videoAR.setAttribute('visible', 'true');
-            videoFile.play();
-            
-            // Mostrar botón de pantalla completa
-            btnFull.style.display = 'block';
+            v.play(); // Inicia el audio
+            vAR.setAttribute('visible', 'true'); // Hace visible la imagen del video
+            btnFS.style.display = 'block';
         };
 
-        // Lógica de pantalla completa revisada
-        btnFull.onclick = () => {
+        // Lógica de pantalla completa
+        btnFS.onclick = () => {
             if (!document.fullscreenElement) {
-                if (videoFile.requestFullscreen) videoFile.requestFullscreen();
-                else if (videoFile.webkitRequestFullscreen) videoFile.webkitRequestFullscreen();
-                btnFull.innerText = "SALIR DE PANTALLA COMPLETA";
+                if (v.requestFullscreen) v.requestFullscreen();
+                else if (v.webkitRequestFullscreen) v.webkitRequestFullscreen();
+                btnFS.innerText = "SALIR DE PANTALLA COMPLETA";
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
-                btnFull.innerText = "PANTALLA COMPLETA";
+                btnFS.innerText = "PANTALLA COMPLETA";
             }
         };
     </script>
