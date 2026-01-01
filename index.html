@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Corregida - Video Visible</title>
+    <title>RA Posición Original</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
@@ -13,51 +13,73 @@
             background: white; z-index: 2000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
+
+        /* Botón de WhatsApp en la POSICIÓN ANTIGUA (Inferior Derecha) */
         #btn-whatsapp {
-            position: fixed; top: 30px; left: 30px; /* Posición contraria solicitada */
-            width: 60px; height: 60px; background-color: #25d366;
-            border-radius: 50%; display: none; z-index: 1500;
+            position: fixed; 
+            bottom: 25px; /* Posición que resulta */
+            right: 25px; 
+            width: 65px; height: 65px; 
+            background-color: #25d366;
+            border-radius: 50%; display: none; 
             justify-content: center; align-items: center;
+            z-index: 1500; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        #btn-comenzar {
+            padding: 15px 30px; background: #007bff; color: white; border: none; border-radius: 50px; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
     <div id="pantalla-inicio">
-        <button id="btn-iniciar" style="padding: 20px; font-size: 20px;">VER VIDEO</button>
+        <button id="btn-comenzar">EMPEZAR</button>
     </div>
 
+    <!-- Botón con tu número configurado -->
     <a id="btn-whatsapp" href="https://wa.me/5511969229578" target="_blank">
         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width: 35px;">
     </a>
 
-    <!-- Escena MindAR con integración A-Frame [2] -->
-    <a-scene mindar-image="imageTargetSrc: ./marker.mind; autoStart: true;" vr-mode-ui="enabled: false">
-        
+    <!-- Configuración de seguimiento de imagen original [1] -->
+    <a-scene mindar-image="imageTargetSrc: ./marker.mind;" vr-mode-ui="enabled: false">
         <a-assets>
-            <!-- El archivo 'asset' de 1,861 KB identificado en tus fuentes [3] -->
-            <video id="videoAsset" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
+            <!-- Video asset.mp4 de 1,861 KB detectado en tus archivos [2, 3] -->
+            <video id="videoAnimales" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
-        <a-camera position="0 0 0" look-controls="enabled: false">
-            <!-- FIX: position="0 0 -1" para que sea visible y shader: flat -->
-            <a-video id="videoAR" src="#videoAsset" width="1" height="0.6" 
-                     position="0 0 -1" material="shader: flat;" visible="false"></a-video>
-        </a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+        <!-- El video ahora se posiciona SOBRE el marcador, no en la cámara -->
+        <a-entity id="target0" mindar-image-target="targetIndex: 0">
+            <a-video src="#videoAnimales" 
+                     width="1" height="0.6" 
+                     position="0 0 0" 
+                     material="shader: flat;"></a-video>
+        </a-entity>
     </a-scene>
 
     <script>
-        const btnInicia = document.getElementById('btn-iniciar');
+        const btn = document.getElementById('btn-comenzar');
         const btnWA = document.getElementById('btn-whatsapp');
-        const v = document.getElementById('videoAsset');
-        const vAR = document.getElementById('videoAR');
+        const video = document.getElementById('videoAnimales');
+        const target = document.getElementById('target0');
 
-        btnInicia.onclick = () => {
+        btn.onclick = () => {
             document.getElementById('pantalla-inicio').style.display = 'none';
-            v.play(); // Esto activa el audio
-            vAR.setAttribute('visible', 'true'); // ¡Esto activa la imagen!
             btnWA.style.display = 'flex';
+            // El video se prepara pero solo suena al encontrar el marcador
         };
+
+        // Lógica de reproducción vinculada a la detección del marcador [1]
+        target.addEventListener('targetFound', () => {
+            video.play();
+        });
+
+        target.addEventListener('targetLost', () => {
+            video.pause();
+        });
     </script>
 </body>
 </html>
