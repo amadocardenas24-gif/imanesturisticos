@@ -3,99 +3,96 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Animales - Completo</title>
-    <!-- Librerías de MindAR y AFRAME [4] -->
+    <title>RA Animales - WhatsApp Centrado</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de inicio de la experiencia */
+        /* Pantalla de inicio con carga */
         #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; z-index: 2000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
-
-        /* Foto de portada con animación de rotación */
-        #img-portada {
-            width: 200px; height: 200px; border-radius: 50%;
-            animation: girar 5s linear infinite; margin-bottom: 20px;
-        }
+        #img-portada { width: 200px; height: 200px; border-radius: 50%; animation: girar 5s linear infinite; margin-bottom: 20px; }
         @keyframes girar { from { transform: rotateY(0deg); } to { transform: rotateY(-360deg); } }
 
         /* Barra de progreso */
-        #contenedor-barra { width: 250px; height: 15px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
-        #barra-progreso { width: 0%; height: 100%; background: #28a745; transition: width 0.3s; }
+        #contenedor-barra { width: 250px; height: 12px; background: #eee; border-radius: 10px; overflow: hidden; }
+        #barra { width: 0%; height: 100%; background: #28a745; transition: width 0.3s; }
 
-        /* Botón de WhatsApp en posición antigua (Inferior Derecha) */
+        /* BOTÓN DE WHATSAPP EN EL CENTRO DE LA PANTALLA */
         #btn-whatsapp {
-            position: fixed; bottom: 25px; right: 25px;
-            width: 60px; height: 60px; background-color: #25d366;
-            border-radius: 50%; display: none; justify-content: center; 
-            align-items: center; z-index: 1500; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            position: fixed; 
+            bottom: 40px; /* Distancia desde el suelo */
+            left: 50%; /* Mitad de la pantalla */
+            transform: translateX(-50%); /* Ajuste para centrado perfecto */
+            width: 70px; height: 70px; 
+            background-color: #25d366;
+            border-radius: 50%; display: none; 
+            justify-content: center; align-items: center;
+            z-index: 1500; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            text-decoration: none;
         }
 
-        #btn-comenzar {
-            padding: 15px 35px; background: #007bff; color: white; border: none; 
-            border-radius: 50px; cursor: pointer; display: none; font-size: 16px;
-        }
+        #btn-entrar { padding: 15px 35px; background: #007bff; color: white; border: none; border-radius: 50px; cursor: pointer; display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Interfaz: Portada y Carga -->
     <div id="pantalla-inicio">
-        <img id="img-portada" src="./portada.jpg" alt="Portada">
-        <div id="contenedor-barra"><div id="barra-progreso"></div></div>
-        <div id="status">Cargando video (1.8 MB)...</div>
-        <button id="btn-comenzar">EMPEZAR EXPERIENCIA</button>
+        <img id="img-portada" src="./portada.jpg">
+        <div id="contenedor-barra"><div id="barra"></div></div>
+        <p id="txt-status">Cargando...</p>
+        <button id="btn-entrar">EMPEZAR</button>
     </div>
 
-    <!-- Botón de WhatsApp (+5511969229578) -->
+    <!-- Botón de WhatsApp centrado -->
     <a id="btn-whatsapp" href="https://wa.me/5511969229578" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width: 35px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width: 40px;">
     </a>
 
-    <!-- Escena de Realidad Aumentada [4] -->
-    <a-scene mindar-image="imageTargetSrc: ./marker.mind;" vr-mode-ui="enabled: false">
+    <!-- Escena: vr-mode-ui="enabled: false" ELIMINA EL BOTÓN DE VR -->
+    <a-scene mindar-image="imageTargetSrc: ./marker.mind;" 
+             vr-mode-ui="enabled: false" 
+             device-orientation-permission-ui="enabled: false">
+        
         <a-assets>
-            <video id="video-asset" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
+            <!-- Vinculación al video de 1,861 KB de tus archivos -->
+            <video id="videoAsset" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Entidad para el marcador [3] -->
-        <a-entity id="target" mindar-image-target="targetIndex: 0">
-            <!-- Shader flat para visibilidad total y dimensiones del video [5] -->
-            <a-video src="#video-asset" width="1" height="0.6" position="0 0 0" material="shader: flat;"></a-video>
+        <a-entity id="target0" mindar-image-target="targetIndex: 0">
+            <!-- Shader flat para visibilidad y rotación habilitada -->
+            <a-video src="#videoAsset" width="1" height="0.6" position="0 0 0" material="shader: flat;"></a-video>
         </a-entity>
     </a-scene>
 
     <script>
-        const barra = document.getElementById('barra-progreso');
-        const btnStart = document.getElementById('btn-comenzar');
+        const barra = document.getElementById('barra');
+        const btnEntrar = document.getElementById('btn-entrar');
         const btnWA = document.getElementById('btn-whatsapp');
-        const video = document.getElementById('video-asset');
-        const target = document.getElementById('target');
+        const video = document.getElementById('videoAsset');
+        const target = document.getElementById('target0');
 
-        // Simulación de carga basada en los archivos del sistema [2]
-        let progreso = 0;
+        let carga = 0;
         const intervalo = setInterval(() => {
-            progreso += 10;
-            barra.style.width = progreso + '%';
-            if (progreso >= 100) {
+            carga += 10;
+            barra.style.width = carga + '%';
+            if (carga >= 100) {
                 clearInterval(intervalo);
-                document.getElementById('status').style.display = 'none';
-                btnStart.style.display = 'block';
+                document.getElementById('txt-status').style.display = 'none';
+                btnEntrar.style.display = 'block';
             }
-        }, 200);
+        }, 150);
 
-        btnStart.onclick = () => {
+        btnEntrar.onclick = () => {
             document.getElementById('pantalla-inicio').style.display = 'none';
             btnWA.style.display = 'flex';
         };
 
-        // Lógica de reproducción al detectar el marcador [3, 4]
         target.addEventListener('targetFound', () => video.play());
         target.addEventListener('targetLost', () => video.pause());
     </script>
