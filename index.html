@@ -3,114 +3,121 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiencia RA - Rotación Horizontal</title>
-    <!-- Librerías de MindAR y AFRAME según documentación [3] -->
+    <title>Experiencia RA Animales</title>
+    <!-- Librerías de MindAR y AFRAME [1] -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de carga completa */
+        /* Pantalla de carga */
         #pantalla-carga {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffffff; z-index: 1000; display: flex;
+            background: white; z-index: 1000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
-            font-family: Arial, sans-serif;
         }
 
-        /* ANIMACIÓN: Rotación de derecha a izquierda (Eje Y) */
-        /* Nota: La perspectiva y el eje Y no están detallados en las fuentes y se añaden para lograr el efecto solicitado */
+        /* Rotación horizontal de derecha a izquierda */
         @keyframes girar-h {
             from { transform: perspective(600px) rotateY(0deg); }
             to { transform: perspective(600px) rotateY(-360deg); }
         }
 
         #foto-inicio {
-            width: 70%; max-width: 350px;
-            border-radius: 15px; margin-bottom: 30px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            /* Aplicación de la animación solicitada */
-            animation: girar-h 5s linear infinite;
+            width: 250px; height: 250px; border-radius: 50%;
+            object-fit: cover; margin-bottom: 20px;
+            animation: girar-h 5s linear infinite; /* Animación solicitada */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        /* Barra de progreso */
-        #contenedor-barra {
-            width: 65%; height: 12px; background: #f0f0f0;
-            border-radius: 10px; overflow: hidden; margin-bottom: 20px;
-            border: 1px solid #ddd;
-        }
-        #progreso {
-            width: 0%; height: 100%; background: #28a745;
-            transition: width 0.3s ease;
-        }
+        #progreso-bar { width: 200px; height: 10px; background: #ddd; border-radius: 5px; }
+        #progreso { width: 0%; height: 100%; background: #28a745; border-radius: 5px; transition: 0.3s; }
 
         button {
-            padding: 15px 35px; font-size: 1.1rem; cursor: pointer;
-            background: #007bff; color: white; border: none;
-            border-radius: 30px; font-weight: bold; display: none;
+            margin-top: 20px; padding: 10px 25px; cursor: pointer;
+            background: #007bff; color: white; border: none; border-radius: 5px;
+            display: none; font-weight: bold;
+        }
+
+        /* Botón Pantalla Completa */
+        #btn-full {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 12px 20px; background: rgba(0,0,0,0.7); color: white;
+            border: 1px solid white; border-radius: 30px; z-index: 999;
+            display: none; cursor: pointer;
         }
     </style>
 </head>
-
 <body>
-    <!-- Interfaz de inicio -->
+
     <div id="pantalla-carga">
-        <!-- Imagen portada.jpg confirmada en conversación previa -->
-        <img id="foto-inicio" src="./portada.jpg" alt="Cargando experiencia...">
-        
-        <div id="contenedor-barra">
-            <div id="progreso"></div>
-        </div>
-        
-        <button id="boton-entrar">COMENZAR</button>
+        <img id="foto-inicio" src="portada.jpg" alt="Portada">
+        <div id="progreso-bar"><div id="progreso"></div></div>
+        <button id="btn-start">EMPEZAR</button>
     </div>
 
-    <!-- Escena de Realidad Aumentada [3] -->
-    <!-- Se vincula al archivo 'marker.mind' basado en tus archivos [2] -->
+    <button id="btn-full">PANTALLA COMPLETA</button>
+
+    <!-- Escena MindAR vinculada a tu archivo marker [1, 2] -->
     <a-scene mindar-image="imageTargetSrc: ./marker.mind;" 
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <!-- Video 'asset.mp4' detectado en tu carpeta ar_experience [2] -->
+            <!-- Usando el video 'asset.mp4' que contiene el tucán y leopardo [2] -->
             <video id="vid" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <!-- Cámara con el video FIJO (HUD) [3] -->
+        <a-camera position="0 0 0" look-controls="enabled: false">
+            <a-video id="video-ar" src="#vid" width="1" height="0.6" 
+                     position="0 0 -1" visible="false"></a-video>
+        </a-camera>
 
-        <!-- TargetIndex 0 corresponde al primer marcador del archivo .mind -->
-        <a-entity id="target0" mindar-image-target="targetIndex: 0">
-            <!-- El video se proyecta sobre el marcador -->
-            <a-video src="#vid" width="1" height="0.6" position="0 0 0"></a-video>
-        </a-entity>
+        <!-- El marcador detectado activa el video fijo -->
+        <a-entity id="target0" mindar-image-target="targetIndex: 0"></a-entity>
     </a-scene>
 
     <script>
-        const barra = document.querySelector('#progreso');
-        const btn = document.querySelector('#boton-entrar');
-        const overlay = document.querySelector('#pantalla-carga');
-        const video = document.querySelector('#vid');
+        const videoElement = document.getElementById('vid');
+        const videoAR = document.getElementById('video-ar');
+        const target = document.getElementById('target0');
+        const btnFull = document.getElementById('btn-full');
 
-        // Simulación de carga basada en la existencia de archivos como el video de 1,861 KB [1]
-        let carga = 0;
-        const tiempoCarga = setInterval(() => {
-            carga += 10;
-            barra.style.width = carga + '%';
-            if (carga >= 100) {
-                clearInterval(tiempoCarga);
-                btn.style.display = 'block';
+        // Simulación de carga (basado en el archivo de 1,861 KB) [4]
+        let p = 0;
+        const interval = setInterval(() => {
+            p += 10;
+            document.getElementById('progreso').style.width = p + '%';
+            if(p >= 100) {
+                clearInterval(interval);
+                document.getElementById('btn-start').style.display = 'block';
             }
-        }, 200);
+        }, 150);
 
-        // Al hacer clic, se oculta la portada y se inicia el video
-        btn.addEventListener('click', () => {
-            overlay.style.display = 'none';
-            video.play(); video.pause(); // Interacción necesaria para audio en navegadores
+        document.getElementById('btn-start').onclick = () => {
+            document.getElementById('pantalla-carga').style.display = 'none';
+            // Pre-reproducción para habilitar audio en móviles
+            videoElement.play(); videoElement.pause();
+        };
+
+        // Al detectar el marcador, mostrar el video fijo y el botón [3]
+        target.addEventListener('targetFound', () => {
+            videoAR.setAttribute('visible', 'true');
+            videoElement.play();
+            btnFull.style.display = 'block';
         });
 
-        // Eventos de MindAR para reproducir/pausar según detección del marcador
-        const target = document.querySelector('#target0');
-        target.addEventListener('targetFound', () => video.play());
-        target.addEventListener('targetLost', () => video.pause());
+        // Lógica de Pantalla Completa
+        btnFull.onclick = () => {
+            if (!document.fullscreenElement) {
+                if (videoElement.requestFullscreen) videoElement.requestFullscreen();
+                else if (videoElement.webkitRequestFullscreen) videoElement.webkitRequestFullscreen();
+                btnFull.innerText = "SALIR DE PANTALLA COMPLETA";
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                btnFull.innerText = "PANTALLA COMPLETA";
+            }
+        };
     </script>
 </body>
 </html>
