@@ -3,103 +3,81 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Animales - Corregido</title>
-    <!-- Librerías de MindAR y AFRAME según documentación oficial [3] -->
+    <title>RA Original - Con Marcador</title>
+    <!-- Librerías según documentación de MindAR -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de inicio para evitar el bloqueo del navegador */
+        /* Pantalla de inicio con rotación */
         #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffffff; z-index: 2000; display: flex;
+            background: white; z-index: 2000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* Animación de rotación de derecha a izquierda para la portada */
-        @keyframes rotar-h {
+        @keyframes girar {
             from { transform: perspective(600px) rotateY(0deg); }
             to { transform: perspective(600px) rotateY(-360deg); }
         }
 
         #img-portada {
             width: 250px; height: 250px; border-radius: 50%;
-            object-fit: cover; margin-bottom: 20px;
-            animation: rotar-h 5s linear infinite;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: girar 5s linear infinite;
         }
 
-        #btn-iniciar {
-            padding: 15px 35px; font-size: 18px; cursor: pointer;
-            background: #28a745; color: white; border: none; border-radius: 50px;
-            font-weight: bold;
-        }
-
-        /* Botón de Pantalla Completa */
-        #btn-fs {
-            position: fixed; bottom: 20px; right: 20px;
-            padding: 12px 20px; background: rgba(0,0,0,0.7);
-            color: white; border: 1px solid white; border-radius: 10px;
-            z-index: 1000; display: none; cursor: pointer;
+        button {
+            margin-top: 20px; padding: 15px 30px; 
+            background: #007bff; color: white; border: none; border-radius: 20px;
         }
     </style>
 </head>
 <body>
 
     <div id="pantalla-inicio">
-        <!-- Se asume portada.jpg en la raíz -->
-        <img id="img-portada" src="./portada.jpg" alt="Portada">
-        <button id="btn-iniciar">EMPEZAR</button>
+        <img id="img-portada" src="./portada.jpg">
+        <button id="btn-comenzar">EMPEZAR</button>
     </div>
 
-    <button id="btn-fs">PANTALLA COMPLETA</button>
-
-    <!-- Configuración MindAR para rastreo de imagen e integración AFRAME [3] -->
-    <a-scene mindar-image="imageTargetSrc: ./marker.mind; autoStart: true;" 
+    <!-- Escena configurada para Image Tracking original -->
+    <a-scene mindar-image="imageTargetSrc: ./marker.mind;" 
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <!-- Usando el video 'asset.mp4' de tu carpeta ar_experience [2] -->
-            <video id="videoAsset" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
+            <!-- Usando el video 'asset.mp4' visto en tu carpeta ar_experience -->
+            <video id="video-original" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
-        <!-- Cámara con el video FIJO frente al usuario -->
-        <a-camera position="0 0 0" look-controls="enabled: false">
-            <!-- Se añade 'material="shader: flat"' y posición -1 para que la imagen sea visible -->
-            <a-video id="videoHUD" src="#videoAsset" width="1" height="0.6" 
-                     position="0 0 -1" material="shader: flat;" visible="false"></a-video>
-        </a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Entidad requerida para MindAR aunque se use modo sin marcador [3] -->
-        <a-entity mindar-image-target="targetIndex: 0"></a-entity>
+        <!-- El video ahora está vinculado al marcador, no a la cámara -->
+        <a-entity id="target0" mindar-image-target="targetIndex: 0">
+            <a-video id="render-video" src="#video-original" 
+                     width="1" height="0.55" 
+                     position="0 0 0"
+                     rotation="0 0 0"></a-video>
+        </a-entity>
     </a-scene>
 
     <script>
-        const btnInicia = document.getElementById('btn-iniciar');
-        const btnFS = document.getElementById('btn-fs');
-        const v = document.getElementById('videoAsset');
-        const vAR = document.getElementById('videoHUD');
+        const btn = document.getElementById('btn-comenzar');
+        const vid = document.getElementById('video-original');
+        const target = document.getElementById('target0');
 
-        // Función para activar el video visualmente y el audio
-        btnInicia.onclick = () => {
+        btn.onclick = () => {
             document.getElementById('pantalla-inicio').style.display = 'none';
-            v.play(); // Inicia el audio
-            vAR.setAttribute('visible', 'true'); // Hace visible la imagen del video
-            btnFS.style.display = 'block';
         };
 
-        // Lógica de pantalla completa
-        btnFS.onclick = () => {
-            if (!document.fullscreenElement) {
-                if (v.requestFullscreen) v.requestFullscreen();
-                else if (v.webkitRequestFullscreen) v.webkitRequestFullscreen();
-                btnFS.innerText = "SALIR DE PANTALLA COMPLETA";
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-                btnFS.innerText = "PANTALLA COMPLETA";
-            }
-        };
+        // El video solo se reproduce cuando se detecta el marcador (targetFound)
+        target.addEventListener('targetFound', () => {
+            vid.play();
+        });
+
+        // El video se pausa si se pierde el marcador
+        target.addEventListener('targetLost', () => {
+            vid.pause();
+        });
     </script>
 </body>
 </html>
