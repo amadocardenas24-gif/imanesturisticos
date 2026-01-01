@@ -3,97 +3,100 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video RA - Sin Marcador</title>
-    <!-- Librerías base según documentación de MindAR -->
+    <title>Experiencia RA Corregida</title>
+    <!-- Librerías de MindAR y AFRAME [3] -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de inicio con rotación horizontal (Derecha a Izquierda) */
+        /* Pantalla de inicio para evitar el bloqueo de video del navegador */
         #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; z-index: 2000; display: flex;
+            background: white; z-index: 2000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
 
+        /* ANIMACIÓN: Rotación horizontal de derecha a izquierda */
         @keyframes girar-h {
             from { transform: perspective(600px) rotateY(0deg); }
             to { transform: perspective(600px) rotateY(-360deg); }
         }
 
-        #portada-img {
+        #foto-portada {
             width: 250px; height: 250px; border-radius: 50%;
-            object-fit: cover; margin-bottom: 25px;
-            animation: girar-h 5s linear infinite;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            object-fit: cover; margin-bottom: 20px;
+            animation: girar-h 5s linear infinite; /* Rotación solicitada */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        #btn-comenzar {
-            padding: 15px 40px; font-size: 18px; cursor: pointer;
-            background: #007bff; color: white; border: none; border-radius: 50px;
-            font-weight: bold;
+        button {
+            padding: 15px 30px; font-size: 18px; cursor: pointer;
+            background: #007bff; color: white; border: none; border-radius: 25px;
         }
 
-        /* Botón de Pantalla Completa revisado */
-        #btn-fullscreen {
+        /* Botón Pantalla Completa */
+        #btn-full {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 12px 25px; background: rgba(0,0,0,0.7); color: white;
-            border: 2px solid white; border-radius: 30px; z-index: 1000;
-            display: none; cursor: pointer; font-family: sans-serif;
+            padding: 10px 20px; background: rgba(0,0,0,0.6); color: white;
+            border: 1px solid white; border-radius: 10px; z-index: 1000;
+            display: none; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
     <div id="pantalla-inicio">
-        <img id="portada-img" src="./portada.jpg" alt="Portada">
-        <button id="btn-comenzar">EMPEZAR EXPERIENCIA</button>
+        <!-- Imagen de portada cargada desde tu raíz -->
+        <img id="foto-portada" src="./portada.jpg" alt="Portada">
+        <button id="btn-start">EMPEZAR REPRODUCCIÓN</button>
     </div>
 
-    <button id="btn-fullscreen">PANTALLA COMPLETA</button>
+    <button id="btn-full">PANTALLA COMPLETA</button>
 
-    <!-- Escena configurada para iniciar sin esperar detección activa -->
+    <!-- Escena MindAR [3]. Se usa autoStart para inicializar la cámara -->
     <a-scene mindar-image="imageTargetSrc: ./marker.mind; autoStart: true;" 
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <!-- Usando el video 'asset.mp4' o '2.mp4' de tus archivos [2, 3] -->
-            <video id="video-file" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
+            <!-- Video 'asset.mp4' identificado en tus archivos [4] -->
+            <video id="vid" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
+        <!-- Cámara con el video FIJO (HUD) para que se vea sin marcador -->
         <a-camera position="0 0 0" look-controls="enabled: false">
-            <!-- El video se coloca directamente frente a la cámara (position -1) -->
-            <!-- Se establece 'visible: true' por defecto para que no necesite target -->
-            <a-video id="video-ar" src="#video-file" width="1" height="0.6" 
-                     position="0 0 -1" visible="false"></a-video>
+            <!-- 'shader: flat' y position '0 0 -1' para asegurar que se vea la imagen -->
+            <a-video id="video-ar" src="#vid" width="1" height="0.6" 
+                     position="0 0 -1" material="shader: flat;" visible="false"></a-video>
         </a-camera>
+
+        <!-- Mantenemos la entidad para evitar errores de la librería [3] -->
+        <a-entity id="target0" mindar-image-target="targetIndex: 0"></a-entity>
     </a-scene>
 
     <script>
-        const btnStart = document.getElementById('btn-comenzar');
-        const btnFull = document.getElementById('btn-fullscreen');
-        const video = document.getElementById('video-file');
+        const btnStart = document.getElementById('btn-start');
+        const btnFull = document.getElementById('btn-full');
+        const videoFile = document.getElementById('vid');
         const videoAR = document.getElementById('video-ar');
 
-        // Al hacer clic en el botón de la portada rotando:
+        // Al hacer clic, el video aparece y se reproduce directamente
         btnStart.onclick = () => {
-            // 1. Ocultamos la pantalla de inicio
             document.getElementById('pantalla-inicio').style.display = 'none';
             
-            // 2. HACEMOS EL VIDEO VISIBLE Y LO REPRODUCIMOS (Sin esperar al target)
+            // Hacer el video visible y darle play (Soluciona el audio sin imagen)
             videoAR.setAttribute('visible', 'true');
-            video.play();
+            videoFile.play();
             
-            // 3. Mostramos el botón de pantalla completa
+            // Mostrar botón de pantalla completa
             btnFull.style.display = 'block';
         };
 
-        // Lógica corregida para Pantalla Completa
+        // Lógica de pantalla completa revisada
         btnFull.onclick = () => {
             if (!document.fullscreenElement) {
-                if (video.requestFullscreen) video.requestFullscreen();
-                else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+                if (videoFile.requestFullscreen) videoFile.requestFullscreen();
+                else if (videoFile.webkitRequestFullscreen) videoFile.webkitRequestFullscreen();
                 btnFull.innerText = "SALIR DE PANTALLA COMPLETA";
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
