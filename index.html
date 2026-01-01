@@ -1,113 +1,91 @@
-<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA con Barra de Progreso</title>
+    <title>RA Animales con WhatsApp</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
+        /* Pantalla de inicio y barra de progreso */
         #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; z-index: 2000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* Portada rotando según historial */
-        @keyframes girar-h {
-            from { transform: perspective(600px) rotateY(0deg); }
-            to { transform: perspective(600px) rotateY(-360deg); }
-        }
-
         #img-portada {
-            width: 220px; height: 220px; border-radius: 50%;
-            animation: girar-h 5s linear infinite; margin-bottom: 20px;
+            width: 200px; height: 200px; border-radius: 50%;
+            animation: girar 5s linear infinite; margin-bottom: 20px;
         }
 
-        /* ESTILOS DE LA BARRA DE PROGRESO */
-        #contenedor-barra {
-            width: 250px; height: 15px; background: #e0e0e0;
-            border-radius: 10px; overflow: hidden; margin-bottom: 10px;
-        }
+        @keyframes girar { from { transform: rotateY(0deg); } to { transform: rotateY(-360deg); } }
 
-        #barra-progreso {
-            width: 0%; height: 100%; background: #28a745;
-            transition: width 0.3s ease-in-out;
+        /* ESTILO DEL BOTÓN DE WHATSAPP */
+        #btn-whatsapp {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #25d366;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            z-index: 1500;
+            display: none; /* Se oculta al principio */
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
         }
-
-        #texto-carga { font-family: sans-serif; color: #555; font-size: 14px; }
 
         #btn-comenzar {
-            padding: 15px 35px; font-size: 18px; cursor: pointer;
-            background: #007bff; color: white; border: none; border-radius: 50px;
-            display: none; /* Se oculta hasta que cargue la barra */
+            padding: 15px 30px; background: #007bff; color: white; border: none; border-radius: 50px; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
     <div id="pantalla-inicio">
-        <!-- Portada JPG de tu raíz -->
-        <img id="img-portada" src="./portada.jpg" alt="Portada">
-        
-        <!-- Elementos de la barra de progreso -->
-        <div id="contenedor-barra">
-            <div id="barra-progreso"></div>
-        </div>
-        <div id="texto-carga">Cargando experiencia...</div>
-
-        <button id="btn-comenzar">ENTRAR A RA</button>
+        <img id="img-portada" src="./portada.jpg">
+        <button id="btn-comenzar">EMPEZAR EXPERIENCIA</button>
     </div>
 
-    <a-scene mindar-image="imageTargetSrc: ./marker.mind;" vr-mode-ui="enabled: false">
+    <!-- Botón de WhatsApp (Reemplaza TU_NUMERO con tu número real) -->
+    <a id="btn-whatsapp" href="https://wa.me/TU_NUMERO" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width: 35px;">
+    </a>
+
+    <a-scene mindar-image="imageTargetSrc: ./marker.mind; autoStart: true;" vr-mode-ui="enabled: false">
         <a-assets>
-            <!-- Usando 'asset.mp4' detectado en tu carpeta 'ar_experience' [3] -->
             <video id="video-file" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-        <a-entity id="target0" mindar-image-target="targetIndex: 0">
-            <a-video src="#video-file" width="1" height="0.6" position="0 0 0"></a-video>
-        </a-entity>
+        <a-camera position="0 0 0" look-controls="enabled: false">
+            <!-- Video fijo frente a la cámara según lo solicitado anteriormente -->
+            <a-video id="video-ar" src="#video-file" width="1" height="0.6" 
+                     position="0 0 -1" material="shader: flat;" visible="false"></a-video>
+        </a-camera>
     </a-scene>
 
     <script>
-        const barra = document.getElementById('barra-progreso');
-        const texto = document.getElementById('texto-carga');
-        const btn = document.getElementById('btn-comenzar');
-        const contenedorBarra = document.getElementById('contenedor-barra');
+        const btnStart = document.getElementById('btn-comenzar');
+        const btnWA = document.getElementById('btn-whatsapp');
         const video = document.getElementById('video-file');
+        const videoAR = document.getElementById('video-ar');
 
-        // Simulación de carga basada en el tamaño de tus archivos (1,861 KB [1])
-        let progreso = 0;
-        const intervalo = setInterval(() => {
-            progreso += Math.floor(Math.random() * 15) + 5; // Aumentos aleatorios
-            if (progreso > 100) progreso = 100;
-            
-            barra.style.width = progreso + '%';
-            texto.innerText = `Cargando: ${progreso}%`;
-
-            if (progreso >= 100) {
-                clearInterval(intervalo);
-                setTimeout(() => {
-                    contenedorBarra.style.display = 'none';
-                    texto.style.display = 'none';
-                    btn.style.display = 'block'; // Mostramos el botón al terminar
-                }, 500);
-            }
-        }, 400);
-
-        btn.onclick = () => {
+        btnStart.onclick = () => {
             document.getElementById('pantalla-inicio').style.display = 'none';
-            // El video se prepara para sonar cuando el marcador sea detectado
+            
+            // Activar video e imagen
+            videoAR.setAttribute('visible', 'true');
+            video.play();
+            
+            // Mostrar el botón de WhatsApp
+            btnWA.style.display = 'flex';
         };
-
-        // Lógica de reproducción original
-        const target = document.getElementById('target0');
-        target.addEventListener('targetFound', () => video.play());
-        target.addEventListener('targetLost', () => video.pause());
     </script>
 </body>
 </html>
