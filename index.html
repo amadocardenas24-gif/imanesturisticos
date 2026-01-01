@@ -3,114 +3,100 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAR Experience - Full</title>
-    
-    <!-- LibrerÌas de MindAR y A-Frame (IntegraciÛn recomendada) -->
+    <title>WebAR - portada JPG</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Estilos para la pantalla gr·fica inicial */
-        #overlay {
+        /* Pantalla de inicio gr√°fica */
+        #pantalla-carga {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; z-index: 1000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
-            font-family: Arial, sans-serif; text-align: center;
+            font-family: sans-serif;
         }
 
-        /* La foto solicitada (puedes usar una captura de tu video asset) */
-        #foto-portada {
-            width: 75%; max-width: 350px; border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2); margin-bottom: 25px;
+        /* IMAGEN CAMBIADA A JPG */
+        #foto-inicio {
+            width: 80%; max-width: 400px; border-radius: 15px;
+            margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        /* Contenedor y barra de progreso */
-        #contenedor-progreso {
-            width: 60%; height: 12px; background: #eee;
-            border-radius: 6px; overflow: hidden; margin-bottom: 20px;
+        /* Barra de progreso */
+        #contenedor-barra {
+            width: 60%; height: 10px; background: #ddd;
+            border-radius: 5px; margin-bottom: 20px;
         }
-        #barra {
-            width: 0%; height: 100%; background: #28a745;
-            transition: width 0.3s ease;
+        #progreso {
+            width: 0%; height: 100%; background: #007bff;
+            border-radius: 5px; transition: width 0.4s;
         }
 
-        #btn-iniciar {
-            padding: 15px 40px; font-size: 1.1rem; cursor: pointer;
-            background: #007bff; color: white; border: none;
-            border-radius: 30px; font-weight: bold; display: none;
+        button {
+            padding: 15px 35px; font-size: 1rem; cursor: pointer;
+            background: #28a745; color: white; border: none;
+            border-radius: 25px; font-weight: bold; display: none;
         }
     </style>
 </head>
 
 <body>
-    <!-- Pantalla Gr·fica con Foto y Barra de Progreso -->
-    <div id="overlay">
-        <!-- Imagen representativa basada en tu video del tuc·n/leopardo -->
-        <img id="foto-portada" src="./asset_preview.jpg" alt="Vista previa de la experiencia">
+    <div id="pantalla-carga">
+        <!-- Se ha cambiado la extensi√≥n de la imagen a .jpg -->
+        <img id="foto-inicio" src="./portada.jpg" alt="Imagen de Bienvenida">
         
-        <div id="contenedor-progreso">
-            <div id="barra"></div>
+        <div id="contenedor-barra">
+            <div id="progreso"></div>
         </div>
         
-        <p id="status">Cargando recursos...</p>
-        <button id="btn-iniciar">INICIAR AR</button>
+        <button id="boton-entrar">INICIAR EXPERIENCIA</button>
     </div>
 
-    <!-- Escena de MindAR configurada para Image Tracking -->
+    <!-- Escena de MindAR usando tu archivo de rastreo -->
     <a-scene mindar-image="imageTargetSrc: ./marker.mind;" 
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <!-- El video asset.mp4 de 1,861 KB visto en tus fuentes -->
-            <video id="arVideo" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
+            <!-- Se utiliza asset.mp4 basado en tu carpeta 'ar_experience' -->
+            <video id="vid" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Entidad que detecta el Image Target (Ìndice 0) -->
         <a-entity id="target0" mindar-image-target="targetIndex: 0">
-            <!-- ProyecciÛn del video seg˙n los atributos del editor -->
-            <a-video src="#arVideo" width="1" height="0.55" position="0 0 0"></a-video>
+            <!-- El video se proyectar√° sobre el marcador -->
+            <a-video src="#vid" width="1" height="0.6" position="0 0 0"></a-video>
         </a-entity>
     </a-scene>
 
     <script>
-        const barra = document.getElementById('barra');
-        const btn = document.getElementById('btn-iniciar');
-        const status = document.getElementById('status');
-        const overlay = document.getElementById('overlay');
-        const video = document.getElementById('arVideo');
+        const barra = document.querySelector('#progreso');
+        const btn = document.querySelector('#boton-entrar');
+        const overlay = document.querySelector('#pantalla-carga');
+        const video = document.querySelector('#vid');
 
-        // SimulaciÛn de barra de progreso para la carga de assets
-        let carga = 0;
-        const tiempoCarga = setInterval(() => {
-            carga += 5;
-            barra.style.width = carga + '%';
-            if (carga >= 100) {
-                clearInterval(tiempoCarga);
-                status.innerText = "°Todo listo!";
+        // Simulaci√≥n de carga para los archivos del proyecto
+        let avance = 0;
+        const tiempo = setInterval(() => {
+            avance += 10;
+            barra.style.width = avance + '%';
+            if (avance >= 100) {
+                clearInterval(tiempo);
                 btn.style.display = 'block';
             }
-        }, 100);
+        }, 150);
 
-        // Al hacer clic, se oculta el overlay y se prepara el audio
         btn.addEventListener('click', () => {
             overlay.style.display = 'none';
-            // InteracciÛn necesaria para habilitar el sonido del MP4
+            // Prepara el video para cumplir con las pol√≠ticas de audio
             video.play(); video.pause(); 
         });
 
-        // Control de reproducciÛn autom·tica al detectar la imagen
-        const target = document.getElementById('target0');
-        target.addEventListener('targetFound', () => {
-            console.log("Objetivo encontrado");
-            video.play();
-        });
-        target.addEventListener('targetLost', () => {
-            console.log("Objetivo perdido");
-            video.pause();
-        });
+        // Control de detecci√≥n de MindAR
+        const target = document.querySelector('#target0');
+        target.addEventListener('targetFound', () => video.play());
+        target.addEventListener('targetLost', () => video.pause());
     </script>
 </body>
 </html>
