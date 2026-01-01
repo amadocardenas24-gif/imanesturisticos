@@ -3,80 +3,60 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA - Posición Contraria</title>
+    <title>RA Corregida - Video Visible</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de inicio y portada con rotación */
         #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; z-index: 2000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
-
-        #img-portada {
-            width: 200px; height: 200px; border-radius: 50%;
-            animation: girar 5s linear infinite; margin-bottom: 20px;
-        }
-        @keyframes girar { from { transform: rotateY(0deg); } to { transform: rotateY(-360deg); } }
-
-        /* NUEVA POSICIÓN CONTRARIA PARA EL BOTÓN (TOP Y LEFT) */
         #btn-whatsapp {
-            position: fixed; 
-            top: 30px; /* Antes era bottom */
-            left: 30px; /* Antes era right */
-            width: 65px; height: 65px; 
-            background-color: #25d366;
-            border-radius: 50%; 
-            display: none; /* Se activa al presionar iniciar */
+            position: fixed; top: 30px; left: 30px; /* Posición contraria solicitada */
+            width: 60px; height: 60px; background-color: #25d366;
+            border-radius: 50%; display: none; z-index: 1500;
             justify-content: center; align-items: center;
-            z-index: 1500; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            text-decoration: none;
-        }
-
-        #btn-iniciar {
-            padding: 15px 35px; background: #007bff; color: white; border: none; border-radius: 50px; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
     <div id="pantalla-inicio">
-        <img id="img-portada" src="./portada.jpg">
-        <button id="btn-iniciar">EMPEZAR</button>
+        <button id="btn-iniciar" style="padding: 20px; font-size: 20px;">VER VIDEO</button>
     </div>
 
-    <!-- Botón de WhatsApp en la nueva posición -->
     <a id="btn-whatsapp" href="https://wa.me/5511969229578" target="_blank">
         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width: 35px;">
     </a>
 
-    <!-- Escena configurada según las fuentes de MindAR -->
+    <!-- Escena MindAR con integración A-Frame [2] -->
     <a-scene mindar-image="imageTargetSrc: ./marker.mind; autoStart: true;" vr-mode-ui="enabled: false">
+        
         <a-assets>
-            <!-- Vinculación al video 'asset.mp4' o '2.mp4' de tus archivos [1, 2] -->
-            <video id="video-file" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
+            <!-- El archivo 'asset' de 1,861 KB identificado en tus fuentes [3] -->
+            <video id="videoAsset" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false">
-            <a-video id="video-ar" src="#video-file" width="1" height="0.6" 
+            <!-- FIX: position="0 0 -1" para que sea visible y shader: flat -->
+            <a-video id="videoAR" src="#videoAsset" width="1" height="0.6" 
                      position="0 0 -1" material="shader: flat;" visible="false"></a-video>
         </a-camera>
     </a-scene>
 
     <script>
-        const btnStart = document.getElementById('btn-iniciar');
+        const btnInicia = document.getElementById('btn-iniciar');
         const btnWA = document.getElementById('btn-whatsapp');
-        const video = document.getElementById('video-file');
-        const videoAR = document.getElementById('video-ar');
+        const v = document.getElementById('videoAsset');
+        const vAR = document.getElementById('videoAR');
 
-        btnStart.onclick = () => {
+        btnInicia.onclick = () => {
             document.getElementById('pantalla-inicio').style.display = 'none';
-            videoAR.setAttribute('visible', 'true');
-            video.play();
-            btnWA.style.display = 'flex'; // Activa el botón en la esquina superior izquierda
+            v.play(); // Esto activa el audio
+            vAR.setAttribute('visible', 'true'); // ¡Esto activa la imagen!
+            btnWA.style.display = 'flex';
         };
     </script>
 </body>
