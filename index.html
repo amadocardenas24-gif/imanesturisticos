@@ -3,115 +3,97 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiencia RA Animales</title>
-    <!-- Librerías de MindAR y AFRAME [1] -->
+    <title>Video RA - Sin Marcador</title>
+    <!-- Librerías base según documentación de MindAR -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de carga */
-        #pantalla-carga {
+        /* Pantalla de inicio con rotación horizontal (Derecha a Izquierda) */
+        #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 1000; display: flex;
+            background: #fff; z-index: 2000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* Rotación horizontal de derecha a izquierda */
         @keyframes girar-h {
             from { transform: perspective(600px) rotateY(0deg); }
             to { transform: perspective(600px) rotateY(-360deg); }
         }
 
-        #foto-inicio {
+        #portada-img {
             width: 250px; height: 250px; border-radius: 50%;
-            object-fit: cover; margin-bottom: 20px;
-            animation: girar-h 5s linear infinite; /* Animación solicitada */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            object-fit: cover; margin-bottom: 25px;
+            animation: girar-h 5s linear infinite;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
-        #progreso-bar { width: 200px; height: 10px; background: #ddd; border-radius: 5px; }
-        #progreso { width: 0%; height: 100%; background: #28a745; border-radius: 5px; transition: 0.3s; }
-
-        button {
-            margin-top: 20px; padding: 10px 25px; cursor: pointer;
-            background: #007bff; color: white; border: none; border-radius: 5px;
-            display: none; font-weight: bold;
+        #btn-comenzar {
+            padding: 15px 40px; font-size: 18px; cursor: pointer;
+            background: #007bff; color: white; border: none; border-radius: 50px;
+            font-weight: bold;
         }
 
-        /* Botón Pantalla Completa */
-        #btn-full {
+        /* Botón de Pantalla Completa revisado */
+        #btn-fullscreen {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 12px 20px; background: rgba(0,0,0,0.7); color: white;
-            border: 1px solid white; border-radius: 30px; z-index: 999;
-            display: none; cursor: pointer;
+            padding: 12px 25px; background: rgba(0,0,0,0.7); color: white;
+            border: 2px solid white; border-radius: 30px; z-index: 1000;
+            display: none; cursor: pointer; font-family: sans-serif;
         }
     </style>
 </head>
 <body>
 
-    <div id="pantalla-carga">
-        <img id="foto-inicio" src="portada.jpg" alt="Portada">
-        <div id="progreso-bar"><div id="progreso"></div></div>
-        <button id="btn-start">EMPEZAR</button>
+    <div id="pantalla-inicio">
+        <img id="portada-img" src="./portada.jpg" alt="Portada">
+        <button id="btn-comenzar">EMPEZAR EXPERIENCIA</button>
     </div>
 
-    <button id="btn-full">PANTALLA COMPLETA</button>
+    <button id="btn-fullscreen">PANTALLA COMPLETA</button>
 
-    <!-- Escena MindAR vinculada a tu archivo marker [1, 2] -->
-    <a-scene mindar-image="imageTargetSrc: ./marker.mind;" 
+    <!-- Escena configurada para iniciar sin esperar detección activa -->
+    <a-scene mindar-image="imageTargetSrc: ./marker.mind; autoStart: true;" 
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <!-- Usando el video 'asset.mp4' que contiene el tucán y leopardo [2] -->
-            <video id="vid" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
+            <!-- Usando el video 'asset.mp4' o '2.mp4' de tus archivos [2, 3] -->
+            <video id="video-file" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
-        <!-- Cámara con el video FIJO (HUD) [3] -->
         <a-camera position="0 0 0" look-controls="enabled: false">
-            <a-video id="video-ar" src="#vid" width="1" height="0.6" 
+            <!-- El video se coloca directamente frente a la cámara (position -1) -->
+            <!-- Se establece 'visible: true' por defecto para que no necesite target -->
+            <a-video id="video-ar" src="#video-file" width="1" height="0.6" 
                      position="0 0 -1" visible="false"></a-video>
         </a-camera>
-
-        <!-- El marcador detectado activa el video fijo -->
-        <a-entity id="target0" mindar-image-target="targetIndex: 0"></a-entity>
     </a-scene>
 
     <script>
-        const videoElement = document.getElementById('vid');
+        const btnStart = document.getElementById('btn-comenzar');
+        const btnFull = document.getElementById('btn-fullscreen');
+        const video = document.getElementById('video-file');
         const videoAR = document.getElementById('video-ar');
-        const target = document.getElementById('target0');
-        const btnFull = document.getElementById('btn-full');
 
-        // Simulación de carga (basado en el archivo de 1,861 KB) [4]
-        let p = 0;
-        const interval = setInterval(() => {
-            p += 10;
-            document.getElementById('progreso').style.width = p + '%';
-            if(p >= 100) {
-                clearInterval(interval);
-                document.getElementById('btn-start').style.display = 'block';
-            }
-        }, 150);
-
-        document.getElementById('btn-start').onclick = () => {
-            document.getElementById('pantalla-carga').style.display = 'none';
-            // Pre-reproducción para habilitar audio en móviles
-            videoElement.play(); videoElement.pause();
+        // Al hacer clic en el botón de la portada rotando:
+        btnStart.onclick = () => {
+            // 1. Ocultamos la pantalla de inicio
+            document.getElementById('pantalla-inicio').style.display = 'none';
+            
+            // 2. HACEMOS EL VIDEO VISIBLE Y LO REPRODUCIMOS (Sin esperar al target)
+            videoAR.setAttribute('visible', 'true');
+            video.play();
+            
+            // 3. Mostramos el botón de pantalla completa
+            btnFull.style.display = 'block';
         };
 
-        // Al detectar el marcador, mostrar el video fijo y el botón [3]
-        target.addEventListener('targetFound', () => {
-            videoAR.setAttribute('visible', 'true');
-            videoElement.play();
-            btnFull.style.display = 'block';
-        });
-
-        // Lógica de Pantalla Completa
+        // Lógica corregida para Pantalla Completa
         btnFull.onclick = () => {
             if (!document.fullscreenElement) {
-                if (videoElement.requestFullscreen) videoElement.requestFullscreen();
-                else if (videoElement.webkitRequestFullscreen) videoElement.webkitRequestFullscreen();
+                if (video.requestFullscreen) video.requestFullscreen();
+                else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
                 btnFull.innerText = "SALIR DE PANTALLA COMPLETA";
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
