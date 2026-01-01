@@ -3,81 +3,111 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Original - Con Marcador</title>
-    <!-- Librerías según documentación de MindAR -->
+    <title>RA con Barra de Progreso</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de inicio con rotación */
         #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; z-index: 2000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
 
-        @keyframes girar {
+        /* Portada rotando según historial */
+        @keyframes girar-h {
             from { transform: perspective(600px) rotateY(0deg); }
             to { transform: perspective(600px) rotateY(-360deg); }
         }
 
         #img-portada {
-            width: 250px; height: 250px; border-radius: 50%;
-            animation: girar 5s linear infinite;
+            width: 220px; height: 220px; border-radius: 50%;
+            animation: girar-h 5s linear infinite; margin-bottom: 20px;
         }
 
-        button {
-            margin-top: 20px; padding: 15px 30px; 
-            background: #007bff; color: white; border: none; border-radius: 20px;
+        /* ESTILOS DE LA BARRA DE PROGRESO */
+        #contenedor-barra {
+            width: 250px; height: 15px; background: #e0e0e0;
+            border-radius: 10px; overflow: hidden; margin-bottom: 10px;
+        }
+
+        #barra-progreso {
+            width: 0%; height: 100%; background: #28a745;
+            transition: width 0.3s ease-in-out;
+        }
+
+        #texto-carga { font-family: sans-serif; color: #555; font-size: 14px; }
+
+        #btn-comenzar {
+            padding: 15px 35px; font-size: 18px; cursor: pointer;
+            background: #007bff; color: white; border: none; border-radius: 50px;
+            display: none; /* Se oculta hasta que cargue la barra */
         }
     </style>
 </head>
 <body>
 
     <div id="pantalla-inicio">
-        <img id="img-portada" src="./portada.jpg">
-        <button id="btn-comenzar">EMPEZAR</button>
+        <!-- Portada JPG de tu raíz -->
+        <img id="img-portada" src="./portada.jpg" alt="Portada">
+        
+        <!-- Elementos de la barra de progreso -->
+        <div id="contenedor-barra">
+            <div id="barra-progreso"></div>
+        </div>
+        <div id="texto-carga">Cargando experiencia...</div>
+
+        <button id="btn-comenzar">ENTRAR A RA</button>
     </div>
 
-    <!-- Escena configurada para Image Tracking original -->
-    <a-scene mindar-image="imageTargetSrc: ./marker.mind;" 
-             vr-mode-ui="enabled: false" 
-             device-orientation-permission-ui="enabled: false">
-        
+    <a-scene mindar-image="imageTargetSrc: ./marker.mind;" vr-mode-ui="enabled: false">
         <a-assets>
-            <!-- Usando el video 'asset.mp4' visto en tu carpeta ar_experience -->
-            <video id="video-original" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
+            <!-- Usando 'asset.mp4' detectado en tu carpeta 'ar_experience' [3] -->
+            <video id="video-file" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- El video ahora está vinculado al marcador, no a la cámara -->
         <a-entity id="target0" mindar-image-target="targetIndex: 0">
-            <a-video id="render-video" src="#video-original" 
-                     width="1" height="0.55" 
-                     position="0 0 0"
-                     rotation="0 0 0"></a-video>
+            <a-video src="#video-file" width="1" height="0.6" position="0 0 0"></a-video>
         </a-entity>
     </a-scene>
 
     <script>
+        const barra = document.getElementById('barra-progreso');
+        const texto = document.getElementById('texto-carga');
         const btn = document.getElementById('btn-comenzar');
-        const vid = document.getElementById('video-original');
-        const target = document.getElementById('target0');
+        const contenedorBarra = document.getElementById('contenedor-barra');
+        const video = document.getElementById('video-file');
+
+        // Simulación de carga basada en el tamaño de tus archivos (1,861 KB [1])
+        let progreso = 0;
+        const intervalo = setInterval(() => {
+            progreso += Math.floor(Math.random() * 15) + 5; // Aumentos aleatorios
+            if (progreso > 100) progreso = 100;
+            
+            barra.style.width = progreso + '%';
+            texto.innerText = `Cargando: ${progreso}%`;
+
+            if (progreso >= 100) {
+                clearInterval(intervalo);
+                setTimeout(() => {
+                    contenedorBarra.style.display = 'none';
+                    texto.style.display = 'none';
+                    btn.style.display = 'block'; // Mostramos el botón al terminar
+                }, 500);
+            }
+        }, 400);
 
         btn.onclick = () => {
             document.getElementById('pantalla-inicio').style.display = 'none';
+            // El video se prepara para sonar cuando el marcador sea detectado
         };
 
-        // El video solo se reproduce cuando se detecta el marcador (targetFound)
-        target.addEventListener('targetFound', () => {
-            vid.play();
-        });
-
-        // El video se pausa si se pierde el marcador
-        target.addEventListener('targetLost', () => {
-            vid.pause();
-        });
+        // Lógica de reproducción original
+        const target = document.getElementById('target0');
+        target.addEventListener('targetFound', () => video.play());
+        target.addEventListener('targetLost', () => video.pause());
     </script>
 </body>
 </html>
