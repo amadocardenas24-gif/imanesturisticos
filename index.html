@@ -1,13 +1,14 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Animales con WhatsApp</title>
+    <title>RA - Posición Contraria</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de inicio y barra de progreso */
+        /* Pantalla de inicio y portada con rotación */
         #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; z-index: 2000; display: flex;
@@ -18,31 +19,25 @@
             width: 200px; height: 200px; border-radius: 50%;
             animation: girar 5s linear infinite; margin-bottom: 20px;
         }
-
         @keyframes girar { from { transform: rotateY(0deg); } to { transform: rotateY(-360deg); } }
 
-        /* ESTILO DEL BOTÓN DE WHATSAPP */
+        /* NUEVA POSICIÓN CONTRARIA PARA EL BOTÓN (TOP Y LEFT) */
         #btn-whatsapp {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
+            position: fixed; 
+            top: 30px; /* Antes era bottom */
+            left: 30px; /* Antes era right */
+            width: 65px; height: 65px; 
             background-color: #25d366;
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            font-size: 30px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-            z-index: 1500;
-            display: none; /* Se oculta al principio */
-            justify-content: center;
-            align-items: center;
+            border-radius: 50%; 
+            display: none; /* Se activa al presionar iniciar */
+            justify-content: center; align-items: center;
+            z-index: 1500; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             text-decoration: none;
         }
 
-        #btn-comenzar {
-            padding: 15px 30px; background: #007bff; color: white; border: none; border-radius: 50px; cursor: pointer;
+        #btn-iniciar {
+            padding: 15px 35px; background: #007bff; color: white; border: none; border-radius: 50px; cursor: pointer;
         }
     </style>
 </head>
@@ -50,41 +45,38 @@
 
     <div id="pantalla-inicio">
         <img id="img-portada" src="./portada.jpg">
-        <button id="btn-comenzar">EMPEZAR EXPERIENCIA</button>
+        <button id="btn-iniciar">EMPEZAR</button>
     </div>
 
-    <!-- Botón de WhatsApp (Reemplaza TU_NUMERO con tu número real) -->
-    <a id="btn-whatsapp" href="https://wa.me/TU_NUMERO" target="_blank">
+    <!-- Botón de WhatsApp en la nueva posición -->
+    <a id="btn-whatsapp" href="https://wa.me/5511969229578" target="_blank">
         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width: 35px;">
     </a>
 
+    <!-- Escena configurada según las fuentes de MindAR -->
     <a-scene mindar-image="imageTargetSrc: ./marker.mind; autoStart: true;" vr-mode-ui="enabled: false">
         <a-assets>
+            <!-- Vinculación al video 'asset.mp4' o '2.mp4' de tus archivos [1, 2] -->
             <video id="video-file" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false">
-            <!-- Video fijo frente a la cámara según lo solicitado anteriormente -->
             <a-video id="video-ar" src="#video-file" width="1" height="0.6" 
                      position="0 0 -1" material="shader: flat;" visible="false"></a-video>
         </a-camera>
     </a-scene>
 
     <script>
-        const btnStart = document.getElementById('btn-comenzar');
+        const btnStart = document.getElementById('btn-iniciar');
         const btnWA = document.getElementById('btn-whatsapp');
         const video = document.getElementById('video-file');
         const videoAR = document.getElementById('video-ar');
 
         btnStart.onclick = () => {
             document.getElementById('pantalla-inicio').style.display = 'none';
-            
-            // Activar video e imagen
             videoAR.setAttribute('visible', 'true');
             video.play();
-            
-            // Mostrar el botón de WhatsApp
-            btnWA.style.display = 'flex';
+            btnWA.style.display = 'flex'; // Activa el botón en la esquina superior izquierda
         };
     </script>
 </body>
