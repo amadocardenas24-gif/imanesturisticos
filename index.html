@@ -3,80 +3,84 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindAR - Imagen Rotando</title>
-    <!-- Librerías base según la documentación de MindAR [2] -->
+    <title>Experiencia RA - Rotación Horizontal</title>
+    <!-- Librerías de MindAR y AFRAME según documentación [3] -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-        /* Pantalla de carga */
+        /* Pantalla de carga completa */
         #pantalla-carga {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; z-index: 1000; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
+            font-family: Arial, sans-serif;
         }
 
-        /* ANIMACIÓN DE ROTACIÓN */
-        @keyframes girar {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        /* ANIMACIÓN: Rotación de derecha a izquierda (Eje Y) */
+        /* Nota: La perspectiva y el eje Y no están detallados en las fuentes y se añaden para lograr el efecto solicitado */
+        @keyframes girar-h {
+            from { transform: perspective(600px) rotateY(0deg); }
+            to { transform: perspective(600px) rotateY(-360deg); }
         }
 
         #foto-inicio {
-            width: 60%; max-width: 300px;
-            border-radius: 50%; /* La rotación luce mejor en círculos */
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            /* Aplicamos la rotación continua */
-            animation: girar 5s linear infinite;
+            width: 70%; max-width: 350px;
+            border-radius: 15px; margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            /* Aplicación de la animación solicitada */
+            animation: girar-h 5s linear infinite;
         }
 
         /* Barra de progreso */
         #contenedor-barra {
-            width: 70%; height: 12px; background: #eee;
+            width: 65%; height: 12px; background: #f0f0f0;
             border-radius: 10px; overflow: hidden; margin-bottom: 20px;
+            border: 1px solid #ddd;
         }
         #progreso {
             width: 0%; height: 100%; background: #28a745;
-            transition: width 0.3s;
+            transition: width 0.3s ease;
         }
 
         button {
-            padding: 12px 30px; font-size: 1.1rem; cursor: pointer;
+            padding: 15px 35px; font-size: 1.1rem; cursor: pointer;
             background: #007bff; color: white; border: none;
-            border-radius: 5px; display: none; /* Se activa al final */
+            border-radius: 30px; font-weight: bold; display: none;
         }
     </style>
 </head>
 
 <body>
+    <!-- Interfaz de inicio -->
     <div id="pantalla-carga">
-        <!-- Imagen que rotará según tu petición -->
-        <img id="foto-inicio" src="./portada.jpg" alt="Cargando...">
+        <!-- Imagen portada.jpg confirmada en conversación previa -->
+        <img id="foto-inicio" src="./portada.jpg" alt="Cargando experiencia...">
         
         <div id="contenedor-barra">
             <div id="progreso"></div>
         </div>
         
-        <button id="boton-entrar">ENTRAR A LA EXPERIENCIA</button>
+        <button id="boton-entrar">COMENZAR</button>
     </div>
 
-    <!-- Escena de Realidad Aumentada [2] -->
-    <!-- Se usa el archivo 'marker' de tus carpetas como fuente [3] -->
+    <!-- Escena de Realidad Aumentada [3] -->
+    <!-- Se vincula al archivo 'marker.mind' basado en tus archivos [2] -->
     <a-scene mindar-image="imageTargetSrc: ./marker.mind;" 
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <!-- Usamos el video 'asset.mp4' o '2.mp4' de tus fuentes [3, 4] -->
+            <!-- Video 'asset.mp4' detectado en tu carpeta ar_experience [2] -->
             <video id="vid" src="./asset.mp4" loop playsinline crossorigin="anonymous"></video>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
+        <!-- TargetIndex 0 corresponde al primer marcador del archivo .mind -->
         <a-entity id="target0" mindar-image-target="targetIndex: 0">
-            <!-- El video aparecerá sobre el marcador -->
-            <a-video src="#vid" width="1" height="0.55" position="0 0 0"></a-video>
+            <!-- El video se proyecta sobre el marcador -->
+            <a-video src="#vid" width="1" height="0.6" position="0 0 0"></a-video>
         </a-entity>
     </a-scene>
 
@@ -86,23 +90,24 @@
         const overlay = document.querySelector('#pantalla-carga');
         const video = document.querySelector('#vid');
 
-        // Simulación de carga de archivos
+        // Simulación de carga basada en la existencia de archivos como el video de 1,861 KB [1]
         let carga = 0;
-        const intervalo = setInterval(() => {
-            carga += 5;
+        const tiempoCarga = setInterval(() => {
+            carga += 10;
             barra.style.width = carga + '%';
             if (carga >= 100) {
-                clearInterval(intervalo);
+                clearInterval(tiempoCarga);
                 btn.style.display = 'block';
             }
-        }, 100);
+        }, 200);
 
+        // Al hacer clic, se oculta la portada y se inicia el video
         btn.addEventListener('click', () => {
             overlay.style.display = 'none';
-            video.play(); video.pause(); // Pre-carga para móviles
+            video.play(); video.pause(); // Interacción necesaria para audio en navegadores
         });
 
-        // Control de reproducción según detección de MindAR [2]
+        // Eventos de MindAR para reproducir/pausar según detección del marcador
         const target = document.querySelector('#target0');
         target.addEventListener('targetFound', () => video.play());
         target.addEventListener('targetLost', () => video.pause());
