@@ -1,622 +1,811 @@
-🧲 Banderas en Pantalla Principal para Imanes Turísticos
-
-Perfecto. Aquí está el código con las banderas prominentes desde el inicio, ya que los imanes son específicos para cada país de la triple frontera:
-
-```html
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Foz do Iguaçu AR - Imanes Turísticos Triple Frontera</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Imanes Turísticos AR - Triple Frontera</title>
+    
+    <!-- A-Frame y MindAR -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <style>
-        /* PANTALLA DE INICIO CON BANDERAS DESTACADAS */
-        .country-selector {
+        /* ================= RESET Y BASE ================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            font-family: 'Arial', sans-serif;
+            background: #000;
+        }
+
+        /* ================= PANTALLA DE CARGA ANIMADA ================= */
+        #loading-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
-            z-index: 1000;
+            background: linear-gradient(135deg, 
+                #0c2461 0%, 
+                #1e3799 25%, 
+                #4a69bd 50%, 
+                #6a89cc 75%, 
+                #82ccdd 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            z-index: 10000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 20px;
+            overflow: hidden;
         }
-        
-        /* TÍTULO CON BANDERAS INTEGRADAS */
-        .main-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        
-        .title-flags {
-            display: flex;
-            gap: 8px;
+
+        /* Banderas decorativas animadas */
+        .flags-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
         }
-        
-        .flag-mini {
-            width: 40px;
-            height: 28px;
-            border-radius: 4px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+
+        .flag-item {
+            position: absolute;
+            width: 60px;
+            height: 40px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            opacity: 0.8;
+            animation: floatFlag 20s infinite linear;
         }
-        
-        h1 {
-            color: white;
-            font-size: 2.2em;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-            font-weight: 700;
-            text-align: center;
-        }
-        
-        .highlight {
-            color: #FFD700;
-            font-weight: 800;
-        }
-        
-        /* BANDERAS PRINCIPALES GRANDES */
-        .flags-hero {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin: 30px 0;
-        }
-        
-        .flag-hero-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 15px;
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            min-width: 150px;
-        }
-        
-        .flag-hero-item:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-        }
-        
-        .flag-large {
-            width: 120px;
-            height: 80px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            transition: transform 0.3s;
-        }
-        
-        .flag-large:hover {
-            transform: scale(1.05);
-        }
-        
+
+        /* Banderas individuales */
         .flag-argentina {
             background: linear-gradient(to bottom, 
                 #74ACDF 33%,    /* Celeste */
-                #FFFFFF 33%,    /* Blanco */
-                #FFFFFF 66%,    /* Blanco */
-                #74ACDF 66%     /* Celeste */
+                #FFFFFF 33%, 
+                #FFFFFF 66%, 
+                #74ACDF 66%
             );
         }
-        
+
         .flag-brasil {
-            background: radial-gradient(circle at center, 
-                #002776 0%,    /* Azul oscuro (círculo) */
+            background: radial-gradient(circle at 50% 50%, 
+                #002776 0%, 
                 #002776 30%, 
                 transparent 30%),
                 linear-gradient(135deg,
-                    #009C3B 0%,    /* Verde */
-                    #FAD221 50%,    /* Amarillo */
-                    #009C3B 100%   /* Verde */
+                    #009C3B 0%, 
+                    #FAD221 50%, 
+                    #009C3B 100%
             );
             position: relative;
         }
-        
-        .flag-brasil::before {
+
+        .flag-brasil::after {
             content: "★";
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             color: #FAD221;
-            font-size: 24px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-size: 16px;
         }
-        
+
         .flag-paraguay {
             background: linear-gradient(to bottom,
                 #D52B1E 33%,    /* Rojo */
-                #FFFFFF 33%,    /* Blanco */
-                #FFFFFF 66%,    /* Blanco */
+                #FFFFFF 33%, 
+                #FFFFFF 66%, 
                 #0038A8 66%     /* Azul */
             );
+        }
+
+        @keyframes floatFlag {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Logo y contenido principal */
+        .loading-content {
             position: relative;
-        }
-        
-        .flag-paraguay::after {
-            content: "✪";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #000;
-            font-size: 20px;
-            opacity: 0.3;
-        }
-        
-        .flag-name {
-            color: white;
-            font-size: 1.3em;
-            font-weight: 600;
-            margin-top: 10px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-        }
-        
-        .flag-subtitle {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        
-        /* LÍNEA CONECTADORA */
-        .flags-connector {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin: 20px 0;
-            color: white;
-            font-size: 1.1em;
-            opacity: 0.8;
-        }
-        
-        .connector-line {
-            flex-grow: 1;
-            height: 2px;
-            background: linear-gradient(90deg, 
-                rgba(116, 172, 223, 0.5),
-                rgba(250, 210, 33, 0.5),
-                rgba(213, 43, 30, 0.5)
-            );
-        }
-        
-        /* INSTRUCCIONES PARA IMANES */
-        .instructions-magnets {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 30px;
-            max-width: 700px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 2;
             text-align: center;
+            padding: 20px;
+            max-width: 95%;
         }
-        
-        .magnets-title {
-            color: white;
-            font-size: 1.4em;
-            margin-bottom: 15px;
+
+        .logo-ar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00dbde, #fc00ff);
+            margin: 0 auto 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            animation: pulseLogo 2s infinite;
+            box-shadow: 
+                0 0 50px rgba(0, 219, 222, 0.5),
+                0 0 100px rgba(252, 0, 255, 0.3);
         }
-        
-        .magnets-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .magnet-step {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .magnet-step h4 {
-            color: #FFD700;
-            margin-bottom: 8px;
-            font-size: 1.1em;
-        }
-        
-        .magnet-step p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9em;
-            line-height: 1.4;
-        }
-        
-        /* BOTÓN DE INICIO GENERAL (si no se selecciona bandera) */
-        .start-global {
-            margin-top: 20px;
-            padding: 15px 40px;
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+
+        .logo-inner {
+            width: 130px;
+            height: 130px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            font-weight: bold;
         }
-        
-        .start-global:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+
+        @keyframes pulseLogo {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-        
-        /* BOTÓN DE SALIDA (durante AR) */
-        .exit-button {
+
+        .title-main {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .title-sub {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        /* Barra de progreso */
+        .progress-container {
+            width: 80%;
+            max-width: 400px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px auto;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff9a00, #ff5e00);
+            border-radius: 8px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                transparent 100%);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .percentage {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0 30px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Botón de inicio */
+        #start-btn {
+            padding: 15px 40px;
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            z-index: 2;
+            box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4);
+            transition: all 0.3s;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(255, 65, 108, 0.6);
+        }
+
+        /* ================= ESCENA AR ================= */
+        #ar-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        /* ================= BOTÓN DE FINALIZAR ================= */
+        #exit-btn {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 9999;
-            display: none;
-        }
-        
-        .exit-btn {
-            padding: 12px 25px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             background: rgba(231, 76, 60, 0.9);
+            border: 2px solid white;
             color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            transition: all 0.3s;
+        }
+
+        #exit-btn:hover {
+            background: rgba(231, 76, 60, 1);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+        }
+
+        /* ================= CONTROLES AR ================= */
+        #ar-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 15px;
+            z-index: 9998;
+        }
+
+        .ar-control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.9);
+            border: 2px solid white;
+            color: white;
+            font-size: 24px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s;
         }
-        
-        .exit-btn:hover {
-            background: rgba(231, 76, 60, 1);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+
+        .ar-control-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
         }
-        
-        /* RESPONSIVE */
+
+        /* ================= INDICADOR DE DETECCIÓN ================= */
+        #detection-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            display: none;
+            z-index: 9997;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        /* ================= OCULTAR UI DE A-FRAME ================= */
+        .a-enter-vr, .a-enter-ar, .vr-button, .ar-button,
+        .a-orientation-modal, .a-dialog, .a-modal,
+        .mindar-ui-overlay, .a-loader-title {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+
+        /* ================= RESPONSIVE ================= */
         @media (max-width: 768px) {
-            .flags-hero {
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
+            .title-main {
+                font-size: 1.5rem;
             }
             
-            .flag-hero-item {
-                min-width: 200px;
+            .title-sub {
+                font-size: 1rem;
+                padding: 0 20px;
             }
             
-            h1 {
-                font-size: 1.8em;
+            .logo-ar {
+                width: 120px;
+                height: 120px;
             }
             
-            .magnets-grid {
-                grid-template-columns: 1fr;
+            .logo-inner {
+                width: 100px;
+                height: 100px;
+                font-size: 30px;
+            }
+            
+            #exit-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+                top: 15px;
+                right: 15px;
+            }
+            
+            .ar-control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .logo-ar {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 20px;
+            }
+            
+            .logo-inner {
+                width: 80px;
+                height: 80px;
+                font-size: 25px;
+            }
+            
+            .title-main {
+                font-size: 1.3rem;
+                margin-bottom: 5px;
+            }
+            
+            .title-sub {
+                font-size: 0.9rem;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Para pantallas muy pequeñas */
+        @media (max-width: 350px) {
+            .title-main {
+                font-size: 1.2rem;
+            }
+            
+            .logo-ar {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .logo-inner {
+                width: 65px;
+                height: 65px;
+                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- PANTALLA DE INICIO CON BANDERAS -->
-    <div class="country-selector" id="countrySelector">
-        <!-- Título con mini banderas -->
-        <div class="main-title">
-            <div class="title-flags">
-                <div class="flag-mini flag-argentina" title="Argentina"></div>
-                <div class="flag-mini flag-brasil" title="Brasil"></div>
-                <div class="flag-mini flag-paraguay" title="Paraguay"></div>
-            </div>
-            <h1>EXPERIENCIA AR<br><span class="highlight">TRIPLE FRONTERA</span></h1>
-        </div>
+    <!-- ================= PANTALLA DE CARGA ================= -->
+    <div id="loading-screen">
+        <div class="flags-container" id="flagsContainer"></div>
         
-        <p style="color: rgba(255,255,255,0.9); text-align: center; margin: 10px 0 30px; max-width: 600px;">
-            Escanea tus <strong>imanes turísticos</strong> de Foz do Iguaçu con tu celular
-        </p>
-        
-        <!-- Línea conectadora -->
-        <div class="flags-connector">
-            <span>ARGENTINA</span>
-            <div class="connector-line"></div>
-            <span>BRASIL</span>
-            <div class="connector-line"></div>
-            <span>PARAGUAY</span>
-        </div>
-        
-        <!-- BANDERAS PRINCIPALES (clickeables) -->
-        <div class="flags-hero">
-            <!-- Argentina -->
-            <div class="flag-hero-item" onclick="startExperience('argentina')">
-                <div class="flag-large flag-argentina"></div>
-                <div class="flag-name">🇦🇷 ARGENTINA</div>
-                <div class="flag-subtitle">Puerto Iguazú<br>Cataratas Argentinas</div>
+        <div class="loading-content">
+            <div class="logo-ar">
+                <div class="logo-inner">AR</div>
             </div>
             
-            <!-- Brasil -->
-            <div class="flag-hero-item" onclick="startExperience('brasil')">
-                <div class="flag-large flag-brasil"></div>
-                <div class="flag-name">🇧🇷 BRASIL</div>
-                <div class="flag-subtitle">Foz do Iguaçu<br>Itaipú Binacional</div>
+            <h1 class="title-main">IMANES TURÍSTICOS AR</h1>
+            <p class="title-sub">Escanea tus imanes de la Triple Frontera con tu dispositivo móvil para ver contenido exclusivo</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
             </div>
             
-            <!-- Paraguay -->
-            <div class="flag-hero-item" onclick="startExperience('paraguay')">
-                <div class="flag-large flag-paraguay"></div>
-                <div class="flag-name">🇵🇾 PARAGUAY</div>
-                <div class="flag-subtitle">Ciudad del Este<br>Puente de la Amistad</div>
-            </div>
-        </div>
-        
-        <!-- Instrucciones específicas para imanes -->
-        <div class="instructions-magnets">
-            <div class="magnets-title">
-                <span>🧲</span>
-                <span>CÓMO USAR TUS IMANES TURÍSTICOS</span>
-            </div>
+            <div class="percentage" id="percentage">0%</div>
             
-            <div class="magnets-grid">
-                <div class="magnet-step">
-                    <h4>1. ELIGE TU IMÁN</h4>
-                    <p>Cada imán tiene el logo del país correspondiente</p>
-                </div>
-                
-                <div class="magnet-step">
-                    <h4>2. SELECCIONA PAÍS</h4>
-                    <p>Toca la bandera del imán que tienes en mano</p>
-                </div>
-                
-                <div class="magnet-step">
-                    <h4>3. ESCANEA</h4>
-                    <p>Apunta tu cámara al imán para verlo cobrar vida</p>
-                </div>
-            </div>
-            
-            <p style="color: rgba(255,255,255,0.8); font-size: 0.95em; margin-top: 15px;">
-                <strong>💡 Tip:</strong> Si tienes varios imanes, selecciona primero el país 
-                del imán que quieres escanear. Puedes cambiar después.
-            </p>
-            
-            <button class="start-global" onclick="startWithoutCountry()">
-                <span>🌎</span>
-                <span>INICIAR SIN SELECCIONAR (MODO UNIVERSAL)</span>
-            </button>
-        </div>
-        
-        <div class="loading-indicator" id="loadingIndicator" style="display: none; color: white; margin-top: 20px;">
-            <span>🔄 Preparando experiencia AR...</span>
+            <button id="start-btn">INICIAR EXPERIENCIA AR</button>
         </div>
     </div>
 
-    <!-- Botón para salir durante AR -->
-    <div class="exit-button" id="exitButton">
-        <button class="exit-btn" onclick="finalizarExperiencia()">
-            <span>🚪</span>
-            <span>VOLVER AL INICIO</span>
-        </button>
+    <!-- ================= ESCENA AR ================= -->
+    <div id="ar-scene">
+        <!-- Se llenará dinámicamente -->
     </div>
 
-    <!-- ESCENA AR -->
-    <a-scene mindar-image="imageTargetSrc: ./foz-3-paises.mind;" 
-             vr-mode-ui="enabled: false"
-             device-orientation-permission-ui="enabled: false"
-             id="arScene"
-             style="display: none;">
-        
-        <!-- Assets y contenido AR (igual que antes) -->
-        <a-assets>
-            <!-- Videos Argentina -->
-            <video id="arg-cataratas" src="./videos/arg-cataratas.mp4" loop playsinline preload="auto"></video>
-            <video id="arg-selva" src="./videos/arg-selva.mp4" loop playsinline preload="auto"></video>
-            <video id="arg-ruinas" src="./videos/arg-ruinas.mp4" loop playsinline preload="auto"></video>
-            
-            <!-- Videos Brasil -->
-            <video id="bra-cataratas" src="./videos/bra-cataratas.mp4" loop playsinline preload="auto"></video>
-            <video id="bra-itaipu" src="./videos/bra-itaipu.mp4" loop playsinline preload="auto"></video>
-            <video id="bra-aves" src="./videos/bra-aves.mp4" loop playsinline preload="auto"></video>
-            
-            <!-- Videos Paraguay -->
-            <video id="pry-puente" src="./videos/pry-puente.mp4" loop playsinline preload="auto"></video>
-            <video id="pry-ciudad" src="./videos/pry-ciudad.mp4" loop playsinline preload="auto"></video>
-            <video id="pry-acaray" src="./videos/pry-acaray.mp4" loop playsinline preload="auto"></video>
-        </a-assets>
+    <!-- ================= BOTÓN DE FINALIZAR ================= -->
+    <button id="exit-btn" title="Finalizar experiencia">✕</button>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <!-- ================= CONTROLES AR ================= -->
+    <div id="ar-controls">
+        <button class="ar-control-btn" id="sound-btn" title="Sonido">🔇</button>
+        <button class="ar-control-btn" id="help-btn" title="Ayuda">?</button>
+    </div>
 
-        <!-- Contenido Argentina -->
-        <a-entity mindar-image-target="targetIndex: 0" class="arg-content" style="display: none;">
-            <a-video src="#arg-cataratas" width="1.6" height="0.9" position="0 0 0"></a-video>
-            <a-text value="🇦🇷 Cataratas Argentinas" position="0 0.6 0" align="center" width="3" color="#74ACDF"></a-text>
-        </a-entity>
-        
-        <!-- ... resto del contenido AR (igual que antes) ... -->
-
-    </a-scene>
+    <!-- ================= INDICADOR DE DETECCIÓN ================= -->
+    <div id="detection-indicator">
+        🔍 Buscando marcador...
+    </div>
 
     <script>
-        // Variables globales
-        let selectedCountry = null;
-        let arStarted = false;
-        
-        // Iniciar experiencia con país específico
-        function startExperience(country) {
-            selectedCountry = country;
-            iniciarAR();
-        }
-        
-        // Iniciar sin seleccionar país (modo universal)
-        function startWithoutCountry() {
-            selectedCountry = 'universal';
-            iniciarAR();
-        }
-        
-        // Función principal para iniciar AR
-        async function iniciarAR() {
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const countrySelector = document.getElementById('countrySelector');
+        // ================= VARIABLES GLOBALES =================
+        let arVideo = null;
+        let arTarget = null;
+        let soundEnabled = false;
+
+        // ================= CREAR BANDERAS DECORATIVAS =================
+        function createFlags() {
+            const container = document.getElementById('flagsContainer');
+            const flagTypes = ['argentina', 'brasil', 'paraguay'];
             
-            // Mostrar carga
-            loadingIndicator.style.display = 'block';
+            // Crear 15 banderas
+            for (let i = 0; i < 15; i++) {
+                const flag = document.createElement('div');
+                flag.className = `flag-item flag-${flagTypes[i % 3]}`;
+                
+                // Posición aleatoria
+                flag.style.left = `${Math.random() * 100}%`;
+                
+                // Tamaño aleatorio
+                const size = 40 + Math.random() * 40;
+                flag.style.width = `${size}px`;
+                flag.style.height = `${size * 0.66}px`;
+                
+                // Animación personalizada
+                flag.style.animationDuration = `${15 + Math.random() * 30}s`;
+                flag.style.animationDelay = `${Math.random() * 10}s`;
+                
+                container.appendChild(flag);
+            }
+        }
+
+        // ================= SIMULAR CARGA =================
+        function simulateLoading() {
+            const progressBar = document.getElementById('progressBar');
+            const percentage = document.getElementById('percentage');
+            const startBtn = document.getElementById('start-btn');
             
-            // Efecto de salida
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                // Incremento variable para parecer real
+                let increment;
+                if (progress < 70) {
+                    increment = Math.random() * 3 + 2;
+                } else if (progress < 90) {
+                    increment = Math.random() * 2 + 1;
+                } else {
+                    increment = Math.random() * 0.5 + 0.2;
+                }
+                
+                progress += increment;
+                if (progress > 100) progress = 100;
+                
+                progressBar.style.width = progress + '%';
+                percentage.textContent = Math.round(progress) + '%';
+                
+                // Efecto visual
+                if (progress % 20 === 0) {
+                    percentage.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        percentage.style.transform = 'scale(1)';
+                    }, 200);
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    
+                    // Mostrar botón de inicio con retardo
+                    setTimeout(() => {
+                        startBtn.style.display = 'block';
+                        startBtn.style.animation = 'fadeIn 0.5s forwards';
+                        
+                        // Cambiar texto final
+                        percentage.textContent = '¡LISTO!';
+                        percentage.style.color = '#00ff88';
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        // ================= INICIAR EXPERIENCIA AR =================
+        function startARExperience() {
+            const loadingScreen = document.getElementById('loading-screen');
+            const arSceneContainer = document.getElementById('ar-scene');
+            
+            // Efecto de desvanecimiento
+            loadingScreen.style.opacity = '0';
+            loadingScreen.style.transition = 'opacity 0.5s ease';
+            
             setTimeout(() => {
-                countrySelector.style.opacity = '0';
-                countrySelector.style.transition = 'opacity 0.5s ease';
+                loadingScreen.style.display = 'none';
+                
+                // Crear escena AR
+                arSceneContainer.innerHTML = `
+                    <a-scene 
+                        mindar-image="imageTargetSrc: ./marker.mind; autoStart: true; uiScanning: no; uiLoading: no; uiError: no;" 
+                        vr-mode-ui="enabled: false"
+                        device-orientation-permission-ui="enabled: false"
+                        permission-ui="enabled: false"
+                        renderer="colorManagement: true; alpha: true; antialias: true;"
+                        embedded
+                        loading-screen="enabled: false"
+                        keyboard-shortcuts="enterVR: false"
+                    >
+                        <a-assets>
+                            <video 
+                                id="main-video" 
+                                src="./asset.mp4" 
+                                preload="auto"
+                                loop 
+                                muted 
+                                playsinline 
+                                webkit-playsinline
+                                crossorigin="anonymous"
+                            ></video>
+                        </a-assets>
+                        
+                        <a-camera 
+                            position="0 0 0" 
+                            look-controls="enabled: false"
+                            wasd-controls="enabled: false"
+                        ></a-camera>
+                        
+                        <a-entity 
+                            id="main-target" 
+                            mindar-image-target="targetIndex: 0"
+                        >
+                            <a-video
+                                src="#main-video"
+                                width="1.78"
+                                height="1"
+                                position="0 0 0"
+                                rotation="0 0 0"
+                                material="shader: flat; transparent: true; alphaTest: 0.5;"
+                            ></a-video>
+                        </a-entity>
+                    </a-scene>
+                `;
+                
+                // Mostrar escena AR
+                setTimeout(() => {
+                    arSceneContainer.style.opacity = '1';
+                    
+                    // Mostrar controles
+                    document.getElementById('exit-btn').style.display = 'flex';
+                    document.getElementById('ar-controls').style.display = 'flex';
+                    document.getElementById('detection-indicator').style.display = 'block';
+                    
+                    // Configurar eventos AR
+                    setTimeout(() => {
+                        setupAREvents();
+                    }, 1000);
+                    
+                }, 100);
+                
+            }, 500);
+        }
+
+        // ================= CONFIGURAR EVENTOS AR =================
+        function setupAREvents() {
+            arTarget = document.querySelector('#main-target');
+            arVideo = document.querySelector('#main-video');
+            const soundBtn = document.getElementById('sound-btn');
+            const helpBtn = document.getElementById('help-btn');
+            const detectionIndicator = document.getElementById('detection-indicator');
+            
+            if (arTarget && arVideo) {
+                console.log('✅ AR Configurado correctamente');
+                
+                // Evento: Marcador detectado
+                arTarget.addEventListener('targetFound', () => {
+                    console.log('🎯 Marcador detectado');
+                    
+                    // Actualizar indicador
+                    detectionIndicator.innerHTML = '✅ Marcador detectado - Video activo';
+                    detectionIndicator.style.borderColor = '#4CAF50';
+                    
+                    // Reproducir video
+                    arVideo.muted = !soundEnabled;
+                    arVideo.play().then(() => {
+                        console.log('▶️ Video en reproducción');
+                    }).catch(err => {
+                        console.log('⚠️ Error reproduciendo video:', err);
+                        // Intentar con mute
+                        arVideo.muted = true;
+                        arVideo.play();
+                    });
+                });
+                
+                // Evento: Marcador perdido
+                arTarget.addEventListener('targetLost', () => {
+                    console.log('❌ Marcador perdido');
+                    
+                    // Actualizar indicador
+                    detectionIndicator.innerHTML = '🔍 Buscando marcador...';
+                    detectionIndicator.style.borderColor = '#FF9800';
+                    
+                    // Pausar video
+                    arVideo.pause();
+                });
+                
+                // Botón de sonido
+                soundBtn.addEventListener('click', () => {
+                    soundEnabled = !soundEnabled;
+                    
+                    if (arVideo) {
+                        arVideo.muted = !soundEnabled;
+                    }
+                    
+                    soundBtn.innerHTML = soundEnabled ? '🔊' : '🔇';
+                    soundBtn.style.background = soundEnabled ? 
+                        'rgba(46, 204, 113, 0.9)' : 'rgba(52, 152, 219, 0.9)';
+                    
+                    // Efecto visual
+                    soundBtn.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        soundBtn.style.transform = 'scale(1)';
+                    }, 100);
+                    
+                    console.log(soundEnabled ? '🔊 Sonido activado' : '🔇 Sonido desactivado');
+                });
+                
+                // Botón de ayuda
+                helpBtn.addEventListener('click', () => {
+                    detectionIndicator.innerHTML = '📱 Apunta la cámara al imán turístico';
+                    detectionIndicator.style.borderColor = '#3498db';
+                    
+                    setTimeout(() => {
+                        if (detectionIndicator.innerHTML.includes('imán')) {
+                            detectionIndicator.innerHTML = '🔍 Buscando marcador...';
+                            detectionIndicator.style.borderColor = '#FF9800';
+                        }
+                    }, 3000);
+                });
+                
+                // Limpiar UI de A-Frame periódicamente
+                setInterval(() => {
+                    const uiElements = document.querySelectorAll('.a-enter-vr, .a-enter-ar');
+                    uiElements.forEach(el => {
+                        el.style.display = 'none';
+                        el.style.opacity = '0';
+                    });
+                }, 500);
+                
+            } else {
+                console.log('🔄 Reintentando configuración AR...');
+                setTimeout(setupAREvents, 500);
+            }
+        }
+
+        // ================= FINALIZAR EXPERIENCIA =================
+        function finalizarExperiencia() {
+            // Pausar video si existe
+            if (arVideo) {
+                arVideo.pause();
+                arVideo.currentTime = 0;
+            }
+            
+            // Ocultar controles AR
+            document.getElementById('exit-btn').style.display = 'none';
+            document.getElementById('ar-controls').style.display = 'none';
+            document.getElementById('detection-indicator').style.display = 'none';
+            
+            // Ocultar escena AR
+            const arSceneContainer = document.getElementById('ar-scene');
+            arSceneContainer.style.opacity = '0';
+            
+            setTimeout(() => {
+                // Limpiar escena AR
+                arSceneContainer.innerHTML = '';
+                
+                // Mostrar pantalla de carga
+                const loadingScreen = document.getElementById('loading-screen');
+                loadingScreen.style.display = 'flex';
+                loadingScreen.style.opacity = '0';
                 
                 setTimeout(() => {
-                    countrySelector.style.display = 'none';
-                    loadingIndicator.style.display = 'none';
+                    loadingScreen.style.transition = 'opacity 0.8s ease';
+                    loadingScreen.style.opacity = '1';
                     
-                    // Mostrar escena AR
-                    const arScene = document.getElementById('arScene');
-                    arScene.style.display = 'block';
+                    // Reiniciar carga
+                    document.getElementById('progressBar').style.width = '0%';
+                    document.getElementById('percentage').textContent = '0%';
+                    document.getElementById('percentage').style.color = 'white';
+                    document.getElementById('start-btn').style.display = 'none';
                     
-                    // Mostrar botón de salida
-                    document.getElementById('exitButton').style.display = 'block';
-                    
-                    // Inicializar AR
-                    setTimeout(initializeAR, 100);
-                }, 500);
-            }, 800);
+                    // Volver a simular carga
+                    simulateLoading();
+                }, 50);
+                
+            }, 500);
+            
+            console.log('✅ Experiencia finalizada, listo para reiniciar');
         }
-        
-        // Inicializar AR
-        function initializeAR() {
-            const scene = document.getElementById('arScene');
+
+        // ================= INICIALIZACIÓN =================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Iniciando Experiencia AR para Imanes Turísticos');
             
-            // Configurar contenido según selección
-            const allContent = document.querySelectorAll('[class$="-content"]');
-            allContent.forEach(content => {
-                content.style.display = 'none';
-            });
+            // Crear banderas decorativas
+            createFlags();
             
-            if (selectedCountry === 'universal') {
-                // Mostrar TODO el contenido (modo universal)
-                allContent.forEach(content => {
-                    content.style.display = 'block';
-                });
-            } else {
-                // Mostrar solo contenido del país seleccionado
-                const countryPrefix = selectedCountry.substring(0, 3);
-                const countryContent = document.querySelectorAll(`.${countryPrefix}-content`);
-                countryContent.forEach(content => {
-                    content.style.display = 'block';
-                });
-            }
+            // Iniciar simulación de carga
+            simulateLoading();
             
-            // Iniciar MindAR
-            if (scene.hasLoaded) {
-                scene.components['mindar-image'].start();
-                arStarted = true;
-                setupVideoControls();
-            } else {
-                scene.addEventListener('loaded', () => {
-                    scene.components['mindar-image'].start();
-                    arStarted = true;
-                    setupVideoControls();
-                });
-            }
-        }
-        
-        // Configurar controles de video
-        function setupVideoControls() {
-            const targets = document.querySelectorAll('[mindar-image-target]');
-            const videos = document.querySelectorAll('video');
+            // Configurar botón de inicio
+            document.getElementById('start-btn').addEventListener('click', startARExperience);
             
-            videos.forEach(video => {
-                video.pause();
-                video.currentTime = 0;
-            });
+            // Configurar botón de finalizar
+            document.getElementById('exit-btn').addEventListener('click', finalizarExperiencia);
             
-            targets.forEach(target => {
-                if (target.style.display !== 'none') {
-                    const video = target.querySelector('video');
-                    
-                    target.addEventListener('targetFound', () => {
-                        videos.forEach(v => v.pause());
-                        setTimeout(() => {
-                            video.play().catch(e => console.log("Audio requiere interacción"));
-                        }, 1000);
-                    });
-                    
-                    target.addEventListener('targetLost', () => {
-                        video.pause();
-                    });
+            // Configurar atajo de teclado (Escape para salir)
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    finalizarExperiencia();
                 }
             });
-        }
-        
-        // Finalizar experiencia (botón de salida)
-        function finalizarExperiencia() {
-            // Pausar videos
-            const videos = document.querySelectorAll('video');
-            videos.forEach(video => {
-                video.pause();
-                video.currentTime = 0;
-            });
             
-            // Detener MindAR
-            const scene = document.querySelector('a-scene');
-            if (scene && scene.components['mindar-image']) {
-                scene.components['mindar-image'].stop();
-            }
-            
-            // Ocultar AR y botón de salida
-            document.getElementById('arScene').style.display = 'none';
-            document.getElementById('exitButton').style.display = 'none';
-            
-            // Mostrar pantalla inicial
-            const countrySelector = document.getElementById('countrySelector');
-            countrySelector.style.display = 'flex';
-            countrySelector.style.opacity = '0';
-            
-            setTimeout(() => {
-                countrySelector.style.transition = 'opacity 0.8s ease';
-                countrySelector.style.opacity = '1';
-            }, 50);
-            
-            // Scroll al inicio
-            window.scrollTo(0, 0);
-            
-            console.log("✅ Experiencia finalizada, listo para nuevo imán");
-        }
-        
-        // Atajos de teclado
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') finalizarExperiencia();
-            if (e.key === '1') startExperience('argentina');
-            if (e.key === '2') startExperience('brasil');
-            if (e.key === '3') startExperience('paraguay');
-            if (e.key === '0') startWithoutCountry();
-            if (e.key === 'r') location.reload();
+            // Ajustar altura para móviles
+            document.body.style.height = window.innerHeight + 'px';
         });
-        
-        // Detectar móvil
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-            console.log("📱 Modo móvil activado para imanes");
-        }
+
+        // ================= MANEJAR REDIMENSIONAMIENTO =================
+        window.addEventListener('resize', () => {
+            document.body.style.height = window.innerHeight + 'px';
+        });
     </script>
 </body>
 </html>
- 
