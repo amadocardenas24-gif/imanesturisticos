@@ -1,116 +1,995 @@
-class AdvancedProgressBar {
-    constructor(containerId, options = {}) {
-        this.container = document.getElementById(containerId);
-        this.options = {
-            type: 'gradient', // gradient, neon, liquid, particles, circular
-            showPercentage: true,
-            showText: true,
-            autoStart: false,
-            duration: 3000,
-            ...options
-        };
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barra de Progreso Mejorada</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #0c2461;
+            --secondary: #1e3799;
+            --accent: #ff9a00;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #ffffff;
+            --dark: #000000;
+        }
         
-        this.progress = 0;
-        this.isAnimating = false;
-        this.init();
-    }
-    
-    init() {
-        this.createHTML();
-        if (this.options.autoStart) this.start();
-    }
-    
-    createHTML() {
-        this.container.innerHTML = `
-            <div class="advanced-progress-container ${this.options.type}">
-                <div class="progress-bar" style="width: 0%"></div>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--light);
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .progress-demo {
+            margin: 40px 0;
+        }
+        
+        /* ================= BARRA DE PROGRESO BÁSICA ================= */
+        .progress-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .section-title i {
+            color: var(--accent);
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            position: relative;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* ================= TIPO 1: GRADIENTE ANIMADO ================= */
+        .type1 .progress-bar {
+            background: linear-gradient(90deg, 
+                #ff416c, #ff4b2b, #ff9a00, #ffcc00,
+                #2ecc71, #1abc9c, #3498db, #9b59b6,
+                #ff416c);
+            background-size: 400% 100%;
+            animation: gradientMove 3s linear infinite;
+        }
+        
+        .type1 .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                transparent 100%);
+            animation: shine 2s infinite;
+        }
+        
+        /* ================= TIPO 2: NÉON GLOW ================= */
+        .type2 .progress-container {
+            border: 2px solid rgba(52, 152, 219, 0.3);
+        }
+        
+        .type2 .progress-bar {
+            background: linear-gradient(90deg, #00dbde, #fc00ff);
+            box-shadow: 0 0 10px #00dbde, 
+                        0 0 20px #fc00ff,
+                        inset 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .type2 .progress-dots {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 10px 50%, white 2px, transparent 2px);
+            background-size: 20px 100%;
+            animation: dotsMove 1s linear infinite;
+        }
+        
+        /* ================= TIPO 3: LÍQUIDO/MORPH ================= */
+        .type3 .progress-container {
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
+        .type3 .progress-bar {
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            animation: liquidWaves 3s ease-in-out infinite;
+        }
+        
+        .type3 .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            filter: blur(5px);
+        }
+        
+        /* ================= TIPO 4: PARTÍCULAS ================= */
+        .type4 .progress-container {
+            overflow: visible;
+        }
+        
+        .type4 .progress-bar {
+            background: linear-gradient(90deg, #ff9a00, #ff5e00);
+        }
+        
+        .type4 .particles {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffcc00;
+            border-radius: 50%;
+            animation: particleFloat 1s ease-out forwards;
+        }
+        
+        /* ================= TIPO 5: PROGRESO CIRCULAR ================= */
+        .circular-progress {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+        }
+        
+        .circular-bg {
+            width: 100%;
+            height: 100%;
+            border: 10px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .circular-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 10px solid;
+            border-radius: 50%;
+            border-color: var(--accent) transparent transparent transparent;
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%);
+            transform: rotate(0deg);
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .circular-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.5);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        /* ================= CONTROLES ================= */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .control-group label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 154, 0, 0.5);
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        /* ================= ESTADOS ESPECIALES ================= */
+        .success .progress-bar {
+            background: linear-gradient(90deg, #2ecc71, #1abc9c);
+            animation: pulseSuccess 1s infinite;
+        }
+        
+        .error .progress-bar {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            animation: shake 0.5s;
+        }
+        
+        .warning .progress-bar {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+            animation: pulseWarning 1s infinite;
+        }
+        
+        /* ================= ANIMACIONES ================= */
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes dotsMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(20px); }
+        }
+        
+        @keyframes liquidWaves {
+            0%, 100% { 
+                border-radius: 10px 30% 30% 10px; 
+            }
+            50% { 
+                border-radius: 10px 10px 30% 30%; 
+            }
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes pulseSuccess {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+        }
+        
+        @keyframes pulseWarning {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(243, 156, 18, 0); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Barra de Progreso Mejorada</h1>
+        
+        <div class="progress-demo">
+            <!-- TIPO 1: GRADIENTE ANIMADO -->
+            <div class="progress-section">
+                <div class="section-title">
+                    <i class="fas fa-palette"></i>
+                    <span>Gradiente Animado</span>
+                </div>
+                <div class="progress-container type1">
+                    <div class="progress-bar" id="progress1"></div>
+                </div>
                 <div class="progress-info">
-                    ${this.options.showText ? '<span class="progress-text">Cargando...</span>' : ''}
-                    ${this.options.showPercentage ? '<span class="progress-percent">0%</span>' : ''}
+                    <span id="text1">Cargando recursos...</span>
+                    <span id="percent1">0%</span>
                 </div>
             </div>
-        `;
+            
+            <!-- TIPO 2: NÉON GLOW -->
+            <div class="progress-section">
+                <div class="section-title">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Efecto Néon</span>
+                </div>
+                <div class="progress-container type2">
+                    <div class="progress-bar" id="progress2"></div>
+                    <div class="progress-dots"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="text2">Procesando datos...</span>
+                    <span id="percent2">0%</span>
+                </div>
+            </div>
+            
+            <!-- TIPO 3: LÍQUIDO/MORPH -->
+            <div class="progress-section">
+                <div class="section-title">
+                    <i class="fas fa-water"></i>
+                    <span>Efecto Líquido</span>
+                </div>
+                <div class="progress-container type3">
+                    <div class="progress-bar" id="progress3"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="text3">Generando contenido...</span>
+                    <span id="percent3">0%</span>
+                </div>
+            </div>
+            
+            <!-- TIPO 4: PARTÍCULAS -->
+            <div class="progress-section">
+                <div class="section-title">
+                    <i class="fas fa-sparkles"></i>
+                    <span>Partículas Animadas</span>
+                </div>
+                <div class="progress-container type4">
+                    <div class="progress-bar" id="progress4"></div>
+                    <div class="particles" id="particles4"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="text4">Analizando información...</span>
+                    <span id="percent4">0%</span>
+                </div>
+            </div>
+            
+            <!-- TIPO 5: CIRCULAR -->
+            <div class="progress-section">
+                <div class="section-title">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Progreso Circular</span>
+                </div>
+                <div class="circular-progress">
+                    <div class="circular-bg"></div>
+                    <div class="circular-fill" id="progress5"></div>
+                    <div class="circular-center">
+                        <span id="percent5">0%</span>
+                    </div>
+                </div>
+                <div class="progress-info" style="text-align: center;">
+                    <span id="text5">Completando tareas...</span>
+                </div>
+            </div>
+        </div>
         
-        this.bar = this.container.querySelector('.progress-bar');
-        this.percentElement = this.container.querySelector('.progress-percent');
-        this.textElement = this.container.querySelector('.progress-text');
-    }
-    
-    start() {
-        this.isAnimating = true;
-        const startTime = Date.now();
+        <!-- CONTROLES -->
+        <div class="controls">
+            <div class="control-group">
+                <label for="progress-range">Progreso: <span id="current-progress">0%</span></label>
+                <input type="range" min="0" max="100" value="0" class="slider" id="progress-range">
+            </div>
+            
+            <div class="control-group">
+                <label for="speed-range">Velocidad: <span id="current-speed">Normal</span></label>
+                <input type="range" min="1" max="10" value="5" class="slider" id="speed-range">
+            </div>
+            
+            <div class="control-group">
+                <label for="type-select">Tipo de Progreso:</label>
+                <select id="type-select" class="btn" style="background: rgba(255,255,255,0.1);">
+                    <option value="gradient">Gradiente Animado</option>
+                    <option value="neon">Efecto Néon</option>
+                    <option value="liquid">Efecto Líquido</option>
+                    <option value="particles">Partículas</option>
+                    <option value="circular">Circular</option>
+                </select>
+            </div>
+        </div>
         
-        const animate = () => {
-            if (!this.isAnimating) return;
-            
-            const elapsed = Date.now() - startTime;
-            this.progress = Math.min(elapsed / this.options.duration * 100, 100);
-            
-            this.update();
-            
-            if (this.progress < 100) {
-                requestAnimationFrame(animate);
-            } else {
-                this.complete();
-            }
+        <!-- BOTONES DE CONTROL -->
+        <div class="buttons">
+            <button class="btn" id="start-btn">
+                <i class="fas fa-play"></i> Iniciar
+            </button>
+            <button class="btn" id="pause-btn">
+                <i class="fas fa-pause"></i> Pausar
+            </button>
+            <button class="btn" id="reset-btn">
+                <i class="fas fa-redo"></i> Reiniciar
+            </button>
+            <button class="btn" id="success-btn">
+                <i class="fas fa-check"></i> Éxito
+            </button>
+            <button class="btn" id="error-btn">
+                <i class="fas fa-times"></i> Error
+            </button>
+            <button class="btn primary" id="simulate-btn">
+                <i class="fas fa-bolt"></i> Simular Carga
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ================= VARIABLES GLOBALES =================
+        let currentProgress = 0;
+        let isAnimating = false;
+        let animationInterval = null;
+        let animationSpeed = 5;
+        let currentType = 'gradient';
+        
+        // ================= ELEMENTOS DEL DOM =================
+        const progressBars = {
+            gradient: document.getElementById('progress1'),
+            neon: document.getElementById('progress2'),
+            liquid: document.getElementById('progress3'),
+            particles: document.getElementById('progress4'),
+            circular: document.getElementById('progress5')
         };
         
-        animate();
-    }
-    
-    update() {
-        this.bar.style.width = `${this.progress}%`;
+        const percentElements = {
+            gradient: document.getElementById('percent1'),
+            neon: document.getElementById('percent2'),
+            liquid: document.getElementById('percent3'),
+            particles: document.getElementById('percent4'),
+            circular: document.getElementById('percent5')
+        };
         
-        if (this.percentElement) {
-            this.percentElement.textContent = `${Math.round(this.progress)}%`;
+        const textElements = {
+            gradient: document.getElementById('text1'),
+            neon: document.getElementById('text2'),
+            liquid: document.getElementById('text3'),
+            particles: document.getElementById('text4'),
+            circular: document.getElementById('text5')
+        };
+        
+        // ================= INICIALIZACIÓN =================
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEventListeners();
+            updateAllProgress();
+        });
+        
+        function initializeEventListeners() {
+            // Control de progreso manual
+            const progressRange = document.getElementById('progress-range');
+            progressRange.addEventListener('input', (e) => {
+                currentProgress = parseInt(e.target.value);
+                updateAllProgress();
+                updateCurrentProgressText();
+            });
+            
+            // Control de velocidad
+            const speedRange = document.getElementById('speed-range');
+            speedRange.addEventListener('input', (e) => {
+                animationSpeed = parseInt(e.target.value);
+                document.getElementById('current-speed').textContent = 
+                    animationSpeed < 3 ? 'Lento' : 
+                    animationSpeed < 7 ? 'Normal' : 'Rápido';
+                
+                if (isAnimating) {
+                    stopAnimation();
+                    startAnimation();
+                }
+            });
+            
+            // Selector de tipo
+            const typeSelect = document.getElementById('type-select');
+            typeSelect.addEventListener('change', (e) => {
+                currentType = e.target.value;
+                updateVisibleProgress();
+            });
+            
+            // Botones de control
+            document.getElementById('start-btn').addEventListener('click', startAnimation);
+            document.getElementById('pause-btn').addEventListener('click', toggleAnimation);
+            document.getElementById('reset-btn').addEventListener('click', resetProgress);
+            document.getElementById('success-btn').addEventListener('click', setSuccessState);
+            document.getElementById('error-btn').addEventListener('click', setErrorState);
+            document.getElementById('simulate-btn').addEventListener('click', simulateLoading);
         }
         
-        if (this.textElement) {
+        // ================= FUNCIONES DE PROGRESO =================
+        function updateAllProgress() {
+            // Actualizar todas las barras
+            Object.keys(progressBars).forEach(type => {
+                updateProgress(type, currentProgress);
+            });
+            
+            // Actualizar rango
+            document.getElementById('progress-range').value = currentProgress;
+            updateCurrentProgressText();
+        }
+        
+        function updateProgress(type, progress) {
+            const bar = progressBars[type];
+            const percent = percentElements[type];
+            const text = textElements[type];
+            
+            if (!bar || !percent || !text) return;
+            
+            // Actualizar ancho/rotación según tipo
+            if (type === 'circular') {
+                const degrees = (progress / 100) * 360;
+                bar.style.transform = `rotate(${degrees}deg)`;
+            } else {
+                bar.style.width = `${progress}%`;
+            }
+            
+            // Actualizar porcentaje
+            percent.textContent = `${progress}%`;
+            
+            // Actualizar texto según progreso
+            updateProgressText(text, progress);
+            
+            // Generar partículas en tipo 4
+            if (type === 'particles' && progress > 0 && progress < 100) {
+                generateParticles(progress);
+            }
+            
+            // Cambiar color según progreso
+            updateProgressColor(bar, progress);
+        }
+        
+        function updateProgressText(element, progress) {
             const texts = [
-                { min: 0, max: 25, text: "Inicializando..." },
-                { min: 25, max: 50, text: "Cargando recursos..." },
-                { min: 50, max: 75, text: "Procesando..." },
-                { min: 75, max: 100, text: "Finalizando..." }
+                { min: 0, max: 20, text: "Inicializando sistema..." },
+                { min: 20, max: 40, text: "Cargando recursos..." },
+                { min: 40, max: 60, text: "Procesando datos..." },
+                { min: 60, max: 80, text: "Generando contenido..." },
+                { min: 80, max: 95, text: "Finalizando..." },
+                { min: 95, max: 100, text: "¡Completado!" }
             ];
             
-            const text = texts.find(t => this.progress >= t.min && this.progress <= t.max);
-            if (text) this.textElement.textContent = text.text;
+            const matchingText = texts.find(t => progress >= t.min && progress <= t.max);
+            if (matchingText) {
+                element.textContent = matchingText.text;
+            }
         }
-    }
-    
-    complete() {
-        this.isAnimating = false;
-        if (this.percentElement) this.percentElement.textContent = "¡Listo!";
-        if (this.textElement) this.textElement.textContent = "Completado";
         
-        // Efecto de completado
-        this.bar.style.background = "linear-gradient(90deg, #2ecc71, #1abc9c)";
-        this.container.classList.add('completed');
+        function updateProgressColor(element, progress) {
+            // Remover clases de estado anterior
+            element.parentElement.parentElement.classList.remove('success', 'error', 'warning');
+            
+            // Aplicar color según progreso
+            if (progress >= 100) {
+                element.parentElement.parentElement.classList.add('success');
+            } else if (progress >= 80) {
+                element.style.background = "linear-gradient(90deg, #ff9a00, #ffcc00)";
+            } else if (progress >= 50) {
+                element.style.background = "linear-gradient(90deg, #3498db, #9b59b6)";
+            } else if (progress >= 20) {
+                element.style.background = "linear-gradient(90deg, #2ecc71, #1abc9c)";
+            }
+        }
         
-        // Evento personalizado
-        this.container.dispatchEvent(new CustomEvent('progressComplete'));
-    }
-    
-    stop() {
-        this.isAnimating = false;
-    }
-    
-    reset() {
-        this.progress = 0;
-        this.update();
-        this.container.classList.remove('completed');
-        this.bar.style.background = "";
-    }
-    
-    setProgress(value) {
-        this.progress = Math.min(Math.max(value, 0), 100);
-        this.update();
-    }
-}
-
-// Uso:
-// const progressBar = new AdvancedProgressBar('loading-container', {
-//     type: 'gradient',
-//     duration: 5000,
-//     autoStart: true
-// });
+        function updateCurrentProgressText() {
+            document.getElementById('current-progress').textContent = `${currentProgress}%`;
+        }
+        
+        function updateVisibleProgress() {
+            // Ocultar todas las barras
+            document.querySelectorAll('.progress-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Mostrar solo la seleccionada
+            let selector = '';
+            switch(currentType) {
+                case 'gradient': selector = '.type1'; break;
+                case 'neon': selector = '.type2'; break;
+                case 'liquid': selector = '.type3'; break;
+                case 'particles': selector = '.type4'; break;
+                case 'circular': 
+                    document.querySelector('.circular-progress').parentElement.style.display = 'block';
+                    return;
+            }
+            
+            document.querySelector(selector).parentElement.style.display = 'block';
+        }
+        
+        // ================= ANIMACIÓN AUTOMÁTICA =================
+        function startAnimation() {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            const speed = 1000 / animationSpeed; // Más rápido con mayor valor
+            
+            animationInterval = setInterval(() => {
+                if (currentProgress < 100) {
+                    currentProgress++;
+                    updateAllProgress();
+                    
+                    // Efecto de vibración en móviles
+                    if (currentProgress % 25 === 0 && navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                } else {
+                    stopAnimation();
+                    showCompletionEffect();
+                }
+            }, speed);
+            
+            // Actualizar botones
+            document.getElementById('start-btn').innerHTML = '<i class="fas fa-play"></i> Continuar';
+            document.getElementById('pause-btn').innerHTML = '<i class="fas fa-pause"></i> Pausar';
+        }
+        
+        function toggleAnimation() {
+            if (isAnimating) {
+                stopAnimation();
+                document.getElementById('pause-btn').innerHTML = '<i class="fas fa-play"></i> Continuar';
+            } else {
+                startAnimation();
+            }
+        }
+        
+        function stopAnimation() {
+            isAnimating = false;
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+        }
+        
+        function resetProgress() {
+            stopAnimation();
+            currentProgress = 0;
+            updateAllProgress();
+            
+            // Resetear botones
+            document.getElementById('start-btn').innerHTML = '<i class="fas fa-play"></i> Iniciar';
+            document.getElementById('pause-btn').innerHTML = '<i class="fas fa-pause"></i> Pausar';
+            
+            // Remover efectos de estado
+            document.querySelectorAll('.progress-section').forEach(section => {
+                section.classList.remove('success', 'error', 'warning');
+            });
+            
+            // Limpiar partículas
+            document.getElementById('particles4').innerHTML = '';
+        }
+        
+        // ================= EFECTOS ESPECIALES =================
+        function generateParticles(progress) {
+            const particlesContainer = document.getElementById('particles4');
+            if (!particlesContainer || Math.random() > 0.3) return;
+            
+            const particleCount = 3;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Posición aleatoria
+                const tx = (Math.random() - 0.5) * 50;
+                const ty = (Math.random() - 0.5) * 50 - 30;
+                particle.style.setProperty('--tx', `${tx}px`);
+                particle.style.setProperty('--ty', `${ty}px`);
+                
+                // Color aleatorio
+                const colors = ['#ffcc00', '#ff9a00', '#ff5e00', '#ff3366'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Tamaño aleatorio
+                const size = 2 + Math.random() * 4;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                particlesContainer.appendChild(particle);
+                
+                // Remover después de la animación
+                setTimeout(() => {
+                    particle.remove();
+                }, 1000);
+            }
+        }
+        
+        function showCompletionEffect() {
+            // Efecto de confeti para progreso circular
+            if (currentType === 'circular') {
+                createConfetti();
+            }
+            
+            // Cambiar texto
+            Object.values(textElements).forEach(text => {
+                if (text) text.textContent = '¡Completado! 🎉';
+            });
+            
+            // Efecto de sonido (si está permitido)
+            playCompletionSound();
+        }
+        
+        function createConfetti() {
+            const colors = ['#ff9a00', '#ff5e00', '#ff3366', '#3498db', '#2ecc71'];
+            const confettiContainer = document.querySelector('.circular-progress');
+            
+            for (let i = 0; i < 20; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    border-radius: 2px;
+                    top: 50%;
+                    left: 50%;
+                    transform: rotate(${Math.random() * 360}deg);
+                    animation: confettiFall 1s ease-out forwards;
+                `;
+                
+                // Animación personalizada
+                const keyframes = `
+                    @keyframes confettiFall {
+                        0% {
+                            transform: translate(0, 0) rotate(0deg) scale(1);
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: translate(${(Math.random() - 0.5) * 200}px, ${100 + Math.random() * 100}px) rotate(${Math.random() * 720}deg) scale(0);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                
+                // Crear style si no existe
+                let style = document.getElementById('confetti-styles');
+                if (!style) {
+                    style = document.createElement('style');
+                    style.id = 'confetti-styles';
+                    document.head.appendChild(style);
+                }
+                style.textContent += keyframes;
+                
+                confettiContainer.appendChild(confetti);
+                
+                // Remover después de la animación
+                setTimeout(() => confetti.remove(), 1000);
+            }
+        }
+        
+        function playCompletionSound() {
+            // Crear sonido de éxito simple (beep)
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('Audio no disponible');
+            }
+        }
+        
+        // ================= ESTADOS ESPECIALES =================
+        function setSuccessState() {
+            stopAnimation();
+            currentProgress = 100;
+            updateAllProgress();
+            
+            // Aplicar clase de éxito a todas las secciones
+            document.querySelectorAll('.progress-section').forEach(section => {
+                section.classList.add('success');
+                section.classList.remove('error', 'warning');
+            });
+            
+            showCompletionEffect();
+        }
+        
+        function setErrorState() {
+            stopAnimation();
+            
+            // Aplicar clase de error a todas las secciones
+            document.querySelectorAll('.progress-section').forEach(section => {
+                section.classList.add('error');
+                section.classList.remove('success', 'warning');
+            });
+            
+            // Cambiar textos
+            Object.values(textElements).forEach(text => {
+                if (text) text.textContent = 'Error en la carga ❌';
+            });
+            
+            // Efecto de sonido de error
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 300;
+                oscillator.type = 'sawtooth';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.8);
+            } catch (e) {
+                console.log('Audio no disponible');
+            }
+        }
+        
+        // ================= SIMULACIÓN DE CARGA REAL =================
+        function simulateLoading() {
+            resetProgress();
+            startAnimation();
+            
+            // Simular diferentes etapas de carga
+            setTimeout(() => {
+                if (currentProgress < 30) {
+                    // Simular pausa en carga
+                    stopAnimation();
+                    setTimeout(() => {
+                        if (!isAnimating) startAnimation();
+                    }, 500);
+                }
+            }, 1500);
+            
+            setTimeout(() => {
+                if (currentProgress < 70) {
+                    // Simular carga más lenta
+                    const currentSpeed = animationSpeed;
+                    animationSpeed = 3;
+                    stopAnimation();
+                    startAnimation();
+                    
+                    setTimeout(() => {
+                        animationSpeed = currentSpeed;
+                    }, 1000);
+                }
+            }, 3000);
+        }
+        
+        // ================= INICIALIZAR CON PROGRESO VISIBLE =================
+        updateVisibleProgress();
+        
+        // Mostrar instrucciones
+        console.log('🚀 Barra de Progreso Mejorada');
+        console.log('📱 Usa los controles para probar diferentes efectos');
+        console.log('🎨 Cambia entre 5 tipos diferentes de barras de progreso');
+        console.log('⚡ Ajusta la velocidad y simula cargas reales');
+    </script>
+</body>
+</html>
