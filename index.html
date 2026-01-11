@@ -2,120 +2,219 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barra de Progreso Mejorada</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Imanes Turísticos AR - Triple Frontera</title>
+    
+    <!-- A-Frame y MindAR -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <style>
-        :root {
-            --primary: #0c2461;
-            --secondary: #1e3799;
-            --accent: #ff9a00;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --light: #ffffff;
-            --dark: #000000;
-        }
-        
+        /* ================= RESET Y BASE ================= */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            min-height: 100vh;
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            font-family: 'Arial', sans-serif;
+            background: #000;
+        }
+
+        /* ================= PANTALLA DE CARGA ANIMADA ================= */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                #0c2461 0%, 
+                #1e3799 25%, 
+                #4a69bd 50%, 
+                #6a89cc 75%, 
+                #82ccdd 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            z-index: 10000;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: var(--light);
-            padding: 20px;
+            overflow: hidden;
         }
-        
-        .container {
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Banderas decorativas animadas */
+        .flags-container {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 800px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
         }
-        
-        h1 {
+
+        .flag-item {
+            position: absolute;
+            width: 60px;
+            height: 40px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            opacity: 0.8;
+            animation: floatFlag 20s infinite linear;
+        }
+
+        /* Banderas individuales */
+        .flag-argentina {
+            background: linear-gradient(to bottom, 
+                #74ACDF 33%,    /* Celeste */
+                #FFFFFF 33%, 
+                #FFFFFF 66%, 
+                #74ACDF 66%
+            );
+        }
+
+        .flag-brasil {
+            background: radial-gradient(circle at 50% 50%, 
+                #002776 0%, 
+                #002776 30%, 
+                transparent 30%),
+                linear-gradient(135deg,
+                    #009C3B 0%, 
+                    #FAD221 50%, 
+                    #009C3B 100%
+            );
+            position: relative;
+        }
+
+        .flag-brasil::after {
+            content: "★";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #FAD221;
+            font-size: 16px;
+        }
+
+        .flag-paraguay {
+            background: linear-gradient(to bottom,
+                #D52B1E 33%,    /* Rojo */
+                #FFFFFF 33%, 
+                #FFFFFF 66%, 
+                #0038A8 66%     /* Azul */
+            );
+        }
+
+        @keyframes floatFlag {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Logo y contenido principal */
+        .loading-content {
+            position: relative;
+            z-index: 2;
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            background: linear-gradient(45deg, var(--light), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .progress-demo {
-            margin: 40px 0;
-        }
-        
-        /* ================= BARRA DE PROGRESO BÁSICA ================= */
-        .progress-section {
-            margin: 30px 0;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 15px;
+            max-width: 95%;
         }
-        
-        .section-title {
+
+        .logo-ar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00dbde, #fc00ff);
+            margin: 0 auto 30px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
+            justify-content: center;
+            animation: pulseLogo 2s infinite;
+            box-shadow: 
+                0 0 50px rgba(0, 219, 222, 0.5),
+                0 0 100px rgba(252, 0, 255, 0.3);
         }
-        
-        .section-title i {
-            color: var(--accent);
+
+        .logo-inner {
+            width: 130px;
+            height: 130px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            font-weight: bold;
         }
-        
+
+        @keyframes pulseLogo {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .title-main {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .title-sub {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        /* Barra de progreso */
         .progress-container {
-            width: 100%;
-            height: 20px;
+            width: 80%;
+            max-width: 400px;
+            height: 15px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             overflow: hidden;
-            position: relative;
-            margin: 15px 0;
+            margin: 20px auto;
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .progress-bar {
             height: 100%;
             width: 0%;
-            border-radius: 10px;
+            background: linear-gradient(90deg, #ff9a00, #ff5e00);
+            border-radius: 8px;
+            transition: width 0.5s ease;
             position: relative;
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        /* ================= TIPO 1: GRADIENTE ANIMADO ================= */
-        .type1 .progress-bar {
-            background: linear-gradient(90deg, 
-                #ff416c, #ff4b2b, #ff9a00, #ffcc00,
-                #2ecc71, #1abc9c, #3498db, #9b59b6,
-                #ff416c);
-            background-size: 400% 100%;
-            animation: gradientMove 3s linear infinite;
-        }
-        
-        .type1 .progress-bar::after {
+
+        .progress-bar::after {
             content: '';
             position: absolute;
             top: 0;
@@ -128,868 +227,585 @@
                 transparent 100%);
             animation: shine 2s infinite;
         }
-        
-        /* ================= TIPO 2: NÉON GLOW ================= */
-        .type2 .progress-container {
-            border: 2px solid rgba(52, 152, 219, 0.3);
-        }
-        
-        .type2 .progress-bar {
-            background: linear-gradient(90deg, #00dbde, #fc00ff);
-            box-shadow: 0 0 10px #00dbde, 
-                        0 0 20px #fc00ff,
-                        inset 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-        
-        .type2 .progress-dots {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: radial-gradient(circle at 10px 50%, white 2px, transparent 2px);
-            background-size: 20px 100%;
-            animation: dotsMove 1s linear infinite;
-        }
-        
-        /* ================= TIPO 3: LÍQUIDO/MORPH ================= */
-        .type3 .progress-container {
-            background: rgba(0, 0, 0, 0.5);
-        }
-        
-        .type3 .progress-bar {
-            background: linear-gradient(90deg, #4facfe, #00f2fe);
-            animation: liquidWaves 3s ease-in-out infinite;
-        }
-        
-        .type3 .progress-bar::before {
-            content: '';
-            position: absolute;
-            top: -5px;
-            left: 0;
-            right: 0;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            filter: blur(5px);
-        }
-        
-        /* ================= TIPO 4: PARTÍCULAS ================= */
-        .type4 .progress-container {
-            overflow: visible;
-        }
-        
-        .type4 .progress-bar {
-            background: linear-gradient(90deg, #ff9a00, #ff5e00);
-        }
-        
-        .type4 .particles {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 30px;
-            height: 30px;
-            pointer-events: none;
-        }
-        
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #ffcc00;
-            border-radius: 50%;
-            animation: particleFloat 1s ease-out forwards;
-        }
-        
-        /* ================= TIPO 5: PROGRESO CIRCULAR ================= */
-        .circular-progress {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            margin: 20px auto;
-        }
-        
-        .circular-bg {
-            width: 100%;
-            height: 100%;
-            border: 10px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-        }
-        
-        .circular-fill {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 10px solid;
-            border-radius: 50%;
-            border-color: var(--accent) transparent transparent transparent;
-            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%);
-            transform: rotate(0deg);
-            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .circular-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.5);
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--accent);
-        }
-        
-        /* ================= CONTROLES ================= */
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 30px 0;
-        }
-        
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .control-group label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .slider {
-            width: 100%;
-            height: 10px;
-            -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            outline: none;
-        }
-        
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(255, 154, 0, 0.5);
-        }
-        
-        .buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 20px 0;
-        }
-        
-        .btn {
-            padding: 12px 25px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            flex: 1;
-            min-width: 120px;
-        }
-        
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .btn.primary {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
-        
-        /* ================= ESTADOS ESPECIALES ================= */
-        .success .progress-bar {
-            background: linear-gradient(90deg, #2ecc71, #1abc9c);
-            animation: pulseSuccess 1s infinite;
-        }
-        
-        .error .progress-bar {
-            background: linear-gradient(90deg, #e74c3c, #c0392b);
-            animation: shake 0.5s;
-        }
-        
-        .warning .progress-bar {
-            background: linear-gradient(90deg, #f39c12, #e67e22);
-            animation: pulseWarning 1s infinite;
-        }
-        
-        /* ================= ANIMACIONES ================= */
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 400% 50%; }
-        }
-        
+
         @keyframes shine {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
-        
-        @keyframes dotsMove {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(20px); }
+
+        .percentage {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0 30px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
-        
-        @keyframes liquidWaves {
-            0%, 100% { 
-                border-radius: 10px 30% 30% 10px; 
-            }
-            50% { 
-                border-radius: 10px 10px 30% 30%; 
-            }
+
+        /* Botón de inicio */
+        #start-btn {
+            padding: 15px 40px;
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            z-index: 2;
+            box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4);
+            transition: all 0.3s;
         }
-        
-        @keyframes particleFloat {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--tx), var(--ty)) scale(0);
-                opacity: 0;
-            }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(255, 65, 108, 0.6);
         }
-        
-        @keyframes pulseSuccess {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
-            50% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+
+        /* ================= ESCENA AR ================= */
+        #ar-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s;
         }
-        
-        @keyframes pulseWarning {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4); }
-            50% { box-shadow: 0 0 0 10px rgba(243, 156, 18, 0); }
+
+        /* ================= BOTÓN DE FINALIZAR ================= */
+        #exit-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(231, 76, 60, 0.9);
+            border: 2px solid white;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            transition: all 0.3s;
         }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
+
+        #exit-btn:hover {
+            background: rgba(231, 76, 60, 1);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
         }
-        
+
+        /* ================= CONTROLES AR ================= */
+        #ar-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 15px;
+            z-index: 9998;
+        }
+
+        .ar-control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.9);
+            border: 2px solid white;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s;
+        }
+
+        .ar-control-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+        }
+
+        /* ================= INDICADOR DE DETECCIÓN ================= */
+        #detection-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            display: none;
+            z-index: 9997;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        /* ================= OCULTAR UI DE A-FRAME ================= */
+        .a-enter-vr, .a-enter-ar, .vr-button, .ar-button,
+        .a-orientation-modal, .a-dialog, .a-modal,
+        .mindar-ui-overlay, .a-loader-title {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+
         /* ================= RESPONSIVE ================= */
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
+        @media (max-width: 768px) {
+            .title-main {
+                font-size: 1.5rem;
             }
             
-            h1 {
-                font-size: 2rem;
+            .title-sub {
+                font-size: 1rem;
+                padding: 0 20px;
             }
             
-            .controls {
-                grid-template-columns: 1fr;
+            .logo-ar {
+                width: 120px;
+                height: 120px;
             }
             
-            .buttons {
-                flex-direction: column;
+            .logo-inner {
+                width: 100px;
+                height: 100px;
+                font-size: 30px;
             }
             
-            .btn {
-                width: 100%;
+            #exit-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+                top: 15px;
+                right: 15px;
+            }
+            
+            .ar-control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .logo-ar {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 20px;
+            }
+            
+            .logo-inner {
+                width: 80px;
+                height: 80px;
+                font-size: 25px;
+            }
+            
+            .title-main {
+                font-size: 1.3rem;
+                margin-bottom: 5px;
+            }
+            
+            .title-sub {
+                font-size: 0.9rem;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Para pantallas muy pequeñas */
+        @media (max-width: 350px) {
+            .title-main {
+                font-size: 1.2rem;
+            }
+            
+            .logo-ar {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .logo-inner {
+                width: 65px;
+                height: 65px;
+                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Barra de Progreso Mejorada</h1>
+    <!-- ================= PANTALLA DE CARGA ================= -->
+    <div id="loading-screen">
+        <div class="flags-container" id="flagsContainer"></div>
         
-        <div class="progress-demo">
-            <!-- TIPO 1: GRADIENTE ANIMADO -->
-            <div class="progress-section">
-                <div class="section-title">
-                    <i class="fas fa-palette"></i>
-                    <span>Gradiente Animado</span>
-                </div>
-                <div class="progress-container type1">
-                    <div class="progress-bar" id="progress1"></div>
-                </div>
-                <div class="progress-info">
-                    <span id="text1">Cargando recursos...</span>
-                    <span id="percent1">0%</span>
-                </div>
+        <div class="loading-content">
+            <div class="logo-ar">
+                <div class="logo-inner">AR</div>
             </div>
             
-            <!-- TIPO 2: NÉON GLOW -->
-            <div class="progress-section">
-                <div class="section-title">
-                    <i class="fas fa-lightbulb"></i>
-                    <span>Efecto Néon</span>
-                </div>
-                <div class="progress-container type2">
-                    <div class="progress-bar" id="progress2"></div>
-                    <div class="progress-dots"></div>
-                </div>
-                <div class="progress-info">
-                    <span id="text2">Procesando datos...</span>
-                    <span id="percent2">0%</span>
-                </div>
+            <h1 class="title-main">IMANES TURÍSTICOS AR</h1>
+            <p class="title-sub">Escanea tus imanes de la Triple Frontera con tu dispositivo móvil para ver contenido exclusivo</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
             </div>
             
-            <!-- TIPO 3: LÍQUIDO/MORPH -->
-            <div class="progress-section">
-                <div class="section-title">
-                    <i class="fas fa-water"></i>
-                    <span>Efecto Líquido</span>
-                </div>
-                <div class="progress-container type3">
-                    <div class="progress-bar" id="progress3"></div>
-                </div>
-                <div class="progress-info">
-                    <span id="text3">Generando contenido...</span>
-                    <span id="percent3">0%</span>
-                </div>
-            </div>
+            <div class="percentage" id="percentage">0%</div>
             
-            <!-- TIPO 4: PARTÍCULAS -->
-            <div class="progress-section">
-                <div class="section-title">
-                    <i class="fas fa-sparkles"></i>
-                    <span>Partículas Animadas</span>
-                </div>
-                <div class="progress-container type4">
-                    <div class="progress-bar" id="progress4"></div>
-                    <div class="particles" id="particles4"></div>
-                </div>
-                <div class="progress-info">
-                    <span id="text4">Analizando información...</span>
-                    <span id="percent4">0%</span>
-                </div>
-            </div>
-            
-            <!-- TIPO 5: CIRCULAR -->
-            <div class="progress-section">
-                <div class="section-title">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Progreso Circular</span>
-                </div>
-                <div class="circular-progress">
-                    <div class="circular-bg"></div>
-                    <div class="circular-fill" id="progress5"></div>
-                    <div class="circular-center">
-                        <span id="percent5">0%</span>
-                    </div>
-                </div>
-                <div class="progress-info" style="text-align: center;">
-                    <span id="text5">Completando tareas...</span>
-                </div>
-            </div>
+            <button id="start-btn">INICIAR EXPERIENCIA AR</button>
         </div>
-        
-        <!-- CONTROLES -->
-        <div class="controls">
-            <div class="control-group">
-                <label for="progress-range">Progreso: <span id="current-progress">0%</span></label>
-                <input type="range" min="0" max="100" value="0" class="slider" id="progress-range">
-            </div>
-            
-            <div class="control-group">
-                <label for="speed-range">Velocidad: <span id="current-speed">Normal</span></label>
-                <input type="range" min="1" max="10" value="5" class="slider" id="speed-range">
-            </div>
-            
-            <div class="control-group">
-                <label for="type-select">Tipo de Progreso:</label>
-                <select id="type-select" class="btn" style="background: rgba(255,255,255,0.1);">
-                    <option value="gradient">Gradiente Animado</option>
-                    <option value="neon">Efecto Néon</option>
-                    <option value="liquid">Efecto Líquido</option>
-                    <option value="particles">Partículas</option>
-                    <option value="circular">Circular</option>
-                </select>
-            </div>
-        </div>
-        
-        <!-- BOTONES DE CONTROL -->
-        <div class="buttons">
-            <button class="btn" id="start-btn">
-                <i class="fas fa-play"></i> Iniciar
-            </button>
-            <button class="btn" id="pause-btn">
-                <i class="fas fa-pause"></i> Pausar
-            </button>
-            <button class="btn" id="reset-btn">
-                <i class="fas fa-redo"></i> Reiniciar
-            </button>
-            <button class="btn" id="success-btn">
-                <i class="fas fa-check"></i> Éxito
-            </button>
-            <button class="btn" id="error-btn">
-                <i class="fas fa-times"></i> Error
-            </button>
-            <button class="btn primary" id="simulate-btn">
-                <i class="fas fa-bolt"></i> Simular Carga
-            </button>
-        </div>
+    </div>
+
+    <!-- ================= ESCENA AR ================= -->
+    <div id="ar-scene">
+        <!-- Se llenará dinámicamente -->
+    </div>
+
+    <!-- ================= BOTÓN DE FINALIZAR ================= -->
+    <button id="exit-btn" title="Finalizar experiencia">✕</button>
+
+    <!-- ================= CONTROLES AR ================= -->
+    <div id="ar-controls">
+        <button class="ar-control-btn" id="sound-btn" title="Sonido">🔇</button>
+        <button class="ar-control-btn" id="help-btn" title="Ayuda">?</button>
+    </div>
+
+    <!-- ================= INDICADOR DE DETECCIÓN ================= -->
+    <div id="detection-indicator">
+        🔍 Buscando marcador...
     </div>
 
     <script>
         // ================= VARIABLES GLOBALES =================
-        let currentProgress = 0;
-        let isAnimating = false;
-        let animationInterval = null;
-        let animationSpeed = 5;
-        let currentType = 'gradient';
-        
-        // ================= ELEMENTOS DEL DOM =================
-        const progressBars = {
-            gradient: document.getElementById('progress1'),
-            neon: document.getElementById('progress2'),
-            liquid: document.getElementById('progress3'),
-            particles: document.getElementById('progress4'),
-            circular: document.getElementById('progress5')
-        };
-        
-        const percentElements = {
-            gradient: document.getElementById('percent1'),
-            neon: document.getElementById('percent2'),
-            liquid: document.getElementById('percent3'),
-            particles: document.getElementById('percent4'),
-            circular: document.getElementById('percent5')
-        };
-        
-        const textElements = {
-            gradient: document.getElementById('text1'),
-            neon: document.getElementById('text2'),
-            liquid: document.getElementById('text3'),
-            particles: document.getElementById('text4'),
-            circular: document.getElementById('text5')
-        };
-        
-        // ================= INICIALIZACIÓN =================
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeEventListeners();
-            updateAllProgress();
-        });
-        
-        function initializeEventListeners() {
-            // Control de progreso manual
-            const progressRange = document.getElementById('progress-range');
-            progressRange.addEventListener('input', (e) => {
-                currentProgress = parseInt(e.target.value);
-                updateAllProgress();
-                updateCurrentProgressText();
-            });
+        let arVideo = null;
+        let arTarget = null;
+        let soundEnabled = false;
+
+        // ================= CREAR BANDERAS DECORATIVAS =================
+        function createFlags() {
+            const container = document.getElementById('flagsContainer');
+            const flagTypes = ['argentina', 'brasil', 'paraguay'];
             
-            // Control de velocidad
-            const speedRange = document.getElementById('speed-range');
-            speedRange.addEventListener('input', (e) => {
-                animationSpeed = parseInt(e.target.value);
-                document.getElementById('current-speed').textContent = 
-                    animationSpeed < 3 ? 'Lento' : 
-                    animationSpeed < 7 ? 'Normal' : 'Rápido';
-                
-                if (isAnimating) {
-                    stopAnimation();
-                    startAnimation();
-                }
-            });
-            
-            // Selector de tipo
-            const typeSelect = document.getElementById('type-select');
-            typeSelect.addEventListener('change', (e) => {
-                currentType = e.target.value;
-                updateVisibleProgress();
-            });
-            
-            // Botones de control
-            document.getElementById('start-btn').addEventListener('click', startAnimation);
-            document.getElementById('pause-btn').addEventListener('click', toggleAnimation);
-            document.getElementById('reset-btn').addEventListener('click', resetProgress);
-            document.getElementById('success-btn').addEventListener('click', setSuccessState);
-            document.getElementById('error-btn').addEventListener('click', setErrorState);
-            document.getElementById('simulate-btn').addEventListener('click', simulateLoading);
-        }
-        
-        // ================= FUNCIONES DE PROGRESO =================
-        function updateAllProgress() {
-            // Actualizar todas las barras
-            Object.keys(progressBars).forEach(type => {
-                updateProgress(type, currentProgress);
-            });
-            
-            // Actualizar rango
-            document.getElementById('progress-range').value = currentProgress;
-            updateCurrentProgressText();
-        }
-        
-        function updateProgress(type, progress) {
-            const bar = progressBars[type];
-            const percent = percentElements[type];
-            const text = textElements[type];
-            
-            if (!bar || !percent || !text) return;
-            
-            // Actualizar ancho/rotación según tipo
-            if (type === 'circular') {
-                const degrees = (progress / 100) * 360;
-                bar.style.transform = `rotate(${degrees}deg)`;
-            } else {
-                bar.style.width = `${progress}%`;
-            }
-            
-            // Actualizar porcentaje
-            percent.textContent = `${progress}%`;
-            
-            // Actualizar texto según progreso
-            updateProgressText(text, progress);
-            
-            // Generar partículas en tipo 4
-            if (type === 'particles' && progress > 0 && progress < 100) {
-                generateParticles(progress);
-            }
-            
-            // Cambiar color según progreso
-            updateProgressColor(bar, progress);
-        }
-        
-        function updateProgressText(element, progress) {
-            const texts = [
-                { min: 0, max: 20, text: "Inicializando sistema..." },
-                { min: 20, max: 40, text: "Cargando recursos..." },
-                { min: 40, max: 60, text: "Procesando datos..." },
-                { min: 60, max: 80, text: "Generando contenido..." },
-                { min: 80, max: 95, text: "Finalizando..." },
-                { min: 95, max: 100, text: "¡Completado!" }
-            ];
-            
-            const matchingText = texts.find(t => progress >= t.min && progress <= t.max);
-            if (matchingText) {
-                element.textContent = matchingText.text;
-            }
-        }
-        
-        function updateProgressColor(element, progress) {
-            // Remover clases de estado anterior
-            element.parentElement.parentElement.classList.remove('success', 'error', 'warning');
-            
-            // Aplicar color según progreso
-            if (progress >= 100) {
-                element.parentElement.parentElement.classList.add('success');
-            } else if (progress >= 80) {
-                element.style.background = "linear-gradient(90deg, #ff9a00, #ffcc00)";
-            } else if (progress >= 50) {
-                element.style.background = "linear-gradient(90deg, #3498db, #9b59b6)";
-            } else if (progress >= 20) {
-                element.style.background = "linear-gradient(90deg, #2ecc71, #1abc9c)";
-            }
-        }
-        
-        function updateCurrentProgressText() {
-            document.getElementById('current-progress').textContent = `${currentProgress}%`;
-        }
-        
-        function updateVisibleProgress() {
-            // Ocultar todas las barras
-            document.querySelectorAll('.progress-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Mostrar solo la seleccionada
-            let selector = '';
-            switch(currentType) {
-                case 'gradient': selector = '.type1'; break;
-                case 'neon': selector = '.type2'; break;
-                case 'liquid': selector = '.type3'; break;
-                case 'particles': selector = '.type4'; break;
-                case 'circular': 
-                    document.querySelector('.circular-progress').parentElement.style.display = 'block';
-                    return;
-            }
-            
-            document.querySelector(selector).parentElement.style.display = 'block';
-        }
-        
-        // ================= ANIMACIÓN AUTOMÁTICA =================
-        function startAnimation() {
-            if (isAnimating) return;
-            
-            isAnimating = true;
-            const speed = 1000 / animationSpeed; // Más rápido con mayor valor
-            
-            animationInterval = setInterval(() => {
-                if (currentProgress < 100) {
-                    currentProgress++;
-                    updateAllProgress();
-                    
-                    // Efecto de vibración en móviles
-                    if (currentProgress % 25 === 0 && navigator.vibrate) {
-                        navigator.vibrate(50);
-                    }
-                } else {
-                    stopAnimation();
-                    showCompletionEffect();
-                }
-            }, speed);
-            
-            // Actualizar botones
-            document.getElementById('start-btn').innerHTML = '<i class="fas fa-play"></i> Continuar';
-            document.getElementById('pause-btn').innerHTML = '<i class="fas fa-pause"></i> Pausar';
-        }
-        
-        function toggleAnimation() {
-            if (isAnimating) {
-                stopAnimation();
-                document.getElementById('pause-btn').innerHTML = '<i class="fas fa-play"></i> Continuar';
-            } else {
-                startAnimation();
-            }
-        }
-        
-        function stopAnimation() {
-            isAnimating = false;
-            if (animationInterval) {
-                clearInterval(animationInterval);
-                animationInterval = null;
-            }
-        }
-        
-        function resetProgress() {
-            stopAnimation();
-            currentProgress = 0;
-            updateAllProgress();
-            
-            // Resetear botones
-            document.getElementById('start-btn').innerHTML = '<i class="fas fa-play"></i> Iniciar';
-            document.getElementById('pause-btn').innerHTML = '<i class="fas fa-pause"></i> Pausar';
-            
-            // Remover efectos de estado
-            document.querySelectorAll('.progress-section').forEach(section => {
-                section.classList.remove('success', 'error', 'warning');
-            });
-            
-            // Limpiar partículas
-            document.getElementById('particles4').innerHTML = '';
-        }
-        
-        // ================= EFECTOS ESPECIALES =================
-        function generateParticles(progress) {
-            const particlesContainer = document.getElementById('particles4');
-            if (!particlesContainer || Math.random() > 0.3) return;
-            
-            const particleCount = 3;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
+            // Crear 15 banderas
+            for (let i = 0; i < 15; i++) {
+                const flag = document.createElement('div');
+                flag.className = `flag-item flag-${flagTypes[i % 3]}`;
                 
                 // Posición aleatoria
-                const tx = (Math.random() - 0.5) * 50;
-                const ty = (Math.random() - 0.5) * 50 - 30;
-                particle.style.setProperty('--tx', `${tx}px`);
-                particle.style.setProperty('--ty', `${ty}px`);
-                
-                // Color aleatorio
-                const colors = ['#ffcc00', '#ff9a00', '#ff5e00', '#ff3366'];
-                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                flag.style.left = `${Math.random() * 100}%`;
                 
                 // Tamaño aleatorio
-                const size = 2 + Math.random() * 4;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                
-                particlesContainer.appendChild(particle);
-                
-                // Remover después de la animación
-                setTimeout(() => {
-                    particle.remove();
-                }, 1000);
-            }
-        }
-        
-        function showCompletionEffect() {
-            // Efecto de confeti para progreso circular
-            if (currentType === 'circular') {
-                createConfetti();
-            }
-            
-            // Cambiar texto
-            Object.values(textElements).forEach(text => {
-                if (text) text.textContent = '¡Completado! 🎉';
-            });
-            
-            // Efecto de sonido (si está permitido)
-            playCompletionSound();
-        }
-        
-        function createConfetti() {
-            const colors = ['#ff9a00', '#ff5e00', '#ff3366', '#3498db', '#2ecc71'];
-            const confettiContainer = document.querySelector('.circular-progress');
-            
-            for (let i = 0; i < 20; i++) {
-                const confetti = document.createElement('div');
-                confetti.style.cssText = `
-                    position: absolute;
-                    width: 10px;
-                    height: 10px;
-                    background: ${colors[Math.floor(Math.random() * colors.length)]};
-                    border-radius: 2px;
-                    top: 50%;
-                    left: 50%;
-                    transform: rotate(${Math.random() * 360}deg);
-                    animation: confettiFall 1s ease-out forwards;
-                `;
+                const size = 40 + Math.random() * 40;
+                flag.style.width = `${size}px`;
+                flag.style.height = `${size * 0.66}px`;
                 
                 // Animación personalizada
-                const keyframes = `
-                    @keyframes confettiFall {
-                        0% {
-                            transform: translate(0, 0) rotate(0deg) scale(1);
-                            opacity: 1;
-                        }
-                        100% {
-                            transform: translate(${(Math.random() - 0.5) * 200}px, ${100 + Math.random() * 100}px) rotate(${Math.random() * 720}deg) scale(0);
-                            opacity: 0;
-                        }
-                    }
-                `;
+                flag.style.animationDuration = `${15 + Math.random() * 30}s`;
+                flag.style.animationDelay = `${Math.random() * 10}s`;
                 
-                // Crear style si no existe
-                let style = document.getElementById('confetti-styles');
-                if (!style) {
-                    style = document.createElement('style');
-                    style.id = 'confetti-styles';
-                    document.head.appendChild(style);
-                }
-                style.textContent += keyframes;
-                
-                confettiContainer.appendChild(confetti);
-                
-                // Remover después de la animación
-                setTimeout(() => confetti.remove(), 1000);
+                container.appendChild(flag);
             }
         }
-        
-        function playCompletionSound() {
-            // Crear sonido de éxito simple (beep)
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-            } catch (e) {
-                console.log('Audio no disponible');
-            }
-        }
-        
-        // ================= ESTADOS ESPECIALES =================
-        function setSuccessState() {
-            stopAnimation();
-            currentProgress = 100;
-            updateAllProgress();
-            
-            // Aplicar clase de éxito a todas las secciones
-            document.querySelectorAll('.progress-section').forEach(section => {
-                section.classList.add('success');
-                section.classList.remove('error', 'warning');
-            });
-            
-            showCompletionEffect();
-        }
-        
-        function setErrorState() {
-            stopAnimation();
-            
-            // Aplicar clase de error a todas las secciones
-            document.querySelectorAll('.progress-section').forEach(section => {
-                section.classList.add('error');
-                section.classList.remove('success', 'warning');
-            });
-            
-            // Cambiar textos
-            Object.values(textElements).forEach(text => {
-                if (text) text.textContent = 'Error en la carga ❌';
-            });
-            
-            // Efecto de sonido de error
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 300;
-                oscillator.type = 'sawtooth';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.8);
-            } catch (e) {
-                console.log('Audio no disponible');
-            }
-        }
-        
-        // ================= SIMULACIÓN DE CARGA REAL =================
+
+        // ================= SIMULAR CARGA =================
         function simulateLoading() {
-            resetProgress();
-            startAnimation();
+            const progressBar = document.getElementById('progressBar');
+            const percentage = document.getElementById('percentage');
+            const startBtn = document.getElementById('start-btn');
             
-            // Simular diferentes etapas de carga
-            setTimeout(() => {
-                if (currentProgress < 30) {
-                    // Simular pausa en carga
-                    stopAnimation();
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                // Incremento variable para parecer real
+                let increment;
+                if (progress < 70) {
+                    increment = Math.random() * 3 + 2;
+                } else if (progress < 90) {
+                    increment = Math.random() * 2 + 1;
+                } else {
+                    increment = Math.random() * 0.5 + 0.2;
+                }
+                
+                progress += increment;
+                if (progress > 100) progress = 100;
+                
+                progressBar.style.width = progress + '%';
+                percentage.textContent = Math.round(progress) + '%';
+                
+                // Efecto visual
+                if (progress % 20 === 0) {
+                    percentage.style.transform = 'scale(1.1)';
                     setTimeout(() => {
-                        if (!isAnimating) startAnimation();
+                        percentage.style.transform = 'scale(1)';
+                    }, 200);
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    
+                    // Mostrar botón de inicio con retardo
+                    setTimeout(() => {
+                        startBtn.style.display = 'block';
+                        startBtn.style.animation = 'fadeIn 0.5s forwards';
+                        
+                        // Cambiar texto final
+                        percentage.textContent = '¡LISTO!';
+                        percentage.style.color = '#00ff88';
                     }, 500);
                 }
-            }, 1500);
+            }, 100);
+        }
+
+        // ================= INICIAR EXPERIENCIA AR =================
+        function startARExperience() {
+            const loadingScreen = document.getElementById('loading-screen');
+            const arSceneContainer = document.getElementById('ar-scene');
+            
+            // Efecto de desvanecimiento
+            loadingScreen.style.opacity = '0';
+            loadingScreen.style.transition = 'opacity 0.5s ease';
             
             setTimeout(() => {
-                if (currentProgress < 70) {
-                    // Simular carga más lenta
-                    const currentSpeed = animationSpeed;
-                    animationSpeed = 3;
-                    stopAnimation();
-                    startAnimation();
+                loadingScreen.style.display = 'none';
+                
+                // Crear escena AR
+                arSceneContainer.innerHTML = `
+                    <a-scene 
+                        mindar-image="imageTargetSrc: ./marker.mind; autoStart: true; uiScanning: no; uiLoading: no; uiError: no;" 
+                        vr-mode-ui="enabled: false"
+                        device-orientation-permission-ui="enabled: false"
+                        permission-ui="enabled: false"
+                        renderer="colorManagement: true; alpha: true; antialias: true;"
+                        embedded
+                        loading-screen="enabled: false"
+                        keyboard-shortcuts="enterVR: false"
+                    >
+                        <a-assets>
+                            <video 
+                                id="main-video" 
+                                src="./asset.mp4" 
+                                preload="auto"
+                                loop 
+                                muted 
+                                playsinline 
+                                webkit-playsinline
+                                crossorigin="anonymous"
+                            ></video>
+                        </a-assets>
+                        
+                        <a-camera 
+                            position="0 0 0" 
+                            look-controls="enabled: false"
+                            wasd-controls="enabled: false"
+                        ></a-camera>
+                        
+                        <a-entity 
+                            id="main-target" 
+                            mindar-image-target="targetIndex: 0"
+                        >
+                            <a-video
+                                src="#main-video"
+                                width="1.78"
+                                height="1"
+                                position="0 0 0"
+                                rotation="0 0 0"
+                                material="shader: flat; transparent: true; alphaTest: 0.5;"
+                            ></a-video>
+                        </a-entity>
+                    </a-scene>
+                `;
+                
+                // Mostrar escena AR
+                setTimeout(() => {
+                    arSceneContainer.style.opacity = '1';
+                    
+                    // Mostrar controles
+                    document.getElementById('exit-btn').style.display = 'flex';
+                    document.getElementById('ar-controls').style.display = 'flex';
+                    document.getElementById('detection-indicator').style.display = 'block';
+                    
+                    // Configurar eventos AR
+                    setTimeout(() => {
+                        setupAREvents();
+                    }, 1000);
+                    
+                }, 100);
+                
+            }, 500);
+        }
+
+        // ================= CONFIGURAR EVENTOS AR =================
+        function setupAREvents() {
+            arTarget = document.querySelector('#main-target');
+            arVideo = document.querySelector('#main-video');
+            const soundBtn = document.getElementById('sound-btn');
+            const helpBtn = document.getElementById('help-btn');
+            const detectionIndicator = document.getElementById('detection-indicator');
+            
+            if (arTarget && arVideo) {
+                console.log('✅ AR Configurado correctamente');
+                
+                // Evento: Marcador detectado
+                arTarget.addEventListener('targetFound', () => {
+                    console.log('🎯 Marcador detectado');
+                    
+                    // Actualizar indicador
+                    detectionIndicator.innerHTML = '✅ Marcador detectado - Video activo';
+                    detectionIndicator.style.borderColor = '#4CAF50';
+                    
+                    // Reproducir video
+                    arVideo.muted = !soundEnabled;
+                    arVideo.play().then(() => {
+                        console.log('▶️ Video en reproducción');
+                    }).catch(err => {
+                        console.log('⚠️ Error reproduciendo video:', err);
+                        // Intentar con mute
+                        arVideo.muted = true;
+                        arVideo.play();
+                    });
+                });
+                
+                // Evento: Marcador perdido
+                arTarget.addEventListener('targetLost', () => {
+                    console.log('❌ Marcador perdido');
+                    
+                    // Actualizar indicador
+                    detectionIndicator.innerHTML = '🔍 Buscando marcador...';
+                    detectionIndicator.style.borderColor = '#FF9800';
+                    
+                    // Pausar video
+                    arVideo.pause();
+                });
+                
+                // Botón de sonido
+                soundBtn.addEventListener('click', () => {
+                    soundEnabled = !soundEnabled;
+                    
+                    if (arVideo) {
+                        arVideo.muted = !soundEnabled;
+                    }
+                    
+                    soundBtn.innerHTML = soundEnabled ? '🔊' : '🔇';
+                    soundBtn.style.background = soundEnabled ? 
+                        'rgba(46, 204, 113, 0.9)' : 'rgba(52, 152, 219, 0.9)';
+                    
+                    // Efecto visual
+                    soundBtn.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        soundBtn.style.transform = 'scale(1)';
+                    }, 100);
+                    
+                    console.log(soundEnabled ? '🔊 Sonido activado' : '🔇 Sonido desactivado');
+                });
+                
+                // Botón de ayuda
+                helpBtn.addEventListener('click', () => {
+                    detectionIndicator.innerHTML = '📱 Apunta la cámara al imán turístico';
+                    detectionIndicator.style.borderColor = '#3498db';
                     
                     setTimeout(() => {
-                        animationSpeed = currentSpeed;
-                    }, 1000);
-                }
-            }, 3000);
+                        if (detectionIndicator.innerHTML.includes('imán')) {
+                            detectionIndicator.innerHTML = '🔍 Buscando marcador...';
+                            detectionIndicator.style.borderColor = '#FF9800';
+                        }
+                    }, 3000);
+                });
+                
+                // Limpiar UI de A-Frame periódicamente
+                setInterval(() => {
+                    const uiElements = document.querySelectorAll('.a-enter-vr, .a-enter-ar');
+                    uiElements.forEach(el => {
+                        el.style.display = 'none';
+                        el.style.opacity = '0';
+                    });
+                }, 500);
+                
+            } else {
+                console.log('🔄 Reintentando configuración AR...');
+                setTimeout(setupAREvents, 500);
+            }
         }
-        
-        // ================= INICIALIZAR CON PROGRESO VISIBLE =================
-        updateVisibleProgress();
-        
-        // Mostrar instrucciones
-        console.log('🚀 Barra de Progreso Mejorada');
-        console.log('📱 Usa los controles para probar diferentes efectos');
-        console.log('🎨 Cambia entre 5 tipos diferentes de barras de progreso');
-        console.log('⚡ Ajusta la velocidad y simula cargas reales');
+
+        // ================= FINALIZAR EXPERIENCIA =================
+        function finalizarExperiencia() {
+            // Pausar video si existe
+            if (arVideo) {
+                arVideo.pause();
+                arVideo.currentTime = 0;
+            }
+            
+            // Ocultar controles AR
+            document.getElementById('exit-btn').style.display = 'none';
+            document.getElementById('ar-controls').style.display = 'none';
+            document.getElementById('detection-indicator').style.display = 'none';
+            
+            // Ocultar escena AR
+            const arSceneContainer = document.getElementById('ar-scene');
+            arSceneContainer.style.opacity = '0';
+            
+            setTimeout(() => {
+                // Limpiar escena AR
+                arSceneContainer.innerHTML = '';
+                
+                // Mostrar pantalla de carga
+                const loadingScreen = document.getElementById('loading-screen');
+                loadingScreen.style.display = 'flex';
+                loadingScreen.style.opacity = '0';
+                
+                setTimeout(() => {
+                    loadingScreen.style.transition = 'opacity 0.8s ease';
+                    loadingScreen.style.opacity = '1';
+                    
+                    // Reiniciar carga
+                    document.getElementById('progressBar').style.width = '0%';
+                    document.getElementById('percentage').textContent = '0%';
+                    document.getElementById('percentage').style.color = 'white';
+                    document.getElementById('start-btn').style.display = 'none';
+                    
+                    // Volver a simular carga
+                    simulateLoading();
+                }, 50);
+                
+            }, 500);
+            
+            console.log('✅ Experiencia finalizada, listo para reiniciar');
+        }
+
+        // ================= INICIALIZACIÓN =================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Iniciando Experiencia AR para Imanes Turísticos');
+            
+            // Crear banderas decorativas
+            createFlags();
+            
+            // Iniciar simulación de carga
+            simulateLoading();
+            
+            // Configurar botón de inicio
+            document.getElementById('start-btn').addEventListener('click', startARExperience);
+            
+            // Configurar botón de finalizar
+            document.getElementById('exit-btn').addEventListener('click', finalizarExperiencia);
+            
+            // Configurar atajo de teclado (Escape para salir)
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    finalizarExperiencia();
+                }
+            });
+            
+            // Ajustar altura para móviles
+            document.body.style.height = window.innerHeight + 'px';
+        });
+
+        // ================= MANEJAR REDIMENSIONAMIENTO =================
+        window.addEventListener('resize', () => {
+            document.body.style.height = window.innerHeight + 'px';
+        });
     </script>
 </body>
-</html>
+</html>  
