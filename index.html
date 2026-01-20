@@ -262,6 +262,101 @@
             box-shadow: 0 12px 35px rgba(255, 65, 108, 0.6);
         }
 
+        /* ================= MENSAJE DE PERMISOS ================= */
+        #permission-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .permission-box {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            animation: permissionPulse 2s infinite;
+        }
+
+        @keyframes permissionPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .permission-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: cameraPulse 3s infinite;
+        }
+
+        @keyframes cameraPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .permission-title {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .permission-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .permission-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .permission-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 150px;
+        }
+
+        #allow-permission-btn {
+            background: linear-gradient(45deg, #00b09b, #96c93d);
+            color: white;
+        }
+
+        #allow-permission-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 176, 155, 0.4);
+        }
+
+        #deny-permission-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #deny-permission-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
         /* ================= ESCENA AR ================= */
         #ar-scene {
             position: fixed;
@@ -379,6 +474,23 @@
                 font-size: 30px;
             }
             
+            .permission-box {
+                padding: 20px;
+            }
+            
+            .permission-title {
+                font-size: 1.5rem;
+            }
+            
+            .permission-text {
+                font-size: 0.9rem;
+            }
+            
+            .permission-btn {
+                padding: 10px 20px;
+                min-width: 120px;
+            }
+            
             #exit-btn {
                 width: 45px;
                 height: 45px;
@@ -416,6 +528,15 @@
                 font-size: 0.9rem;
                 margin-bottom: 20px;
             }
+            
+            .permission-icon {
+                font-size: 3rem;
+                margin-bottom: 15px;
+            }
+            
+            .permission-title {
+                font-size: 1.3rem;
+            }
         }
 
         /* Para pantallas muy pequeñas */
@@ -434,10 +555,33 @@
                 height: 65px;
                 font-size: 20px;
             }
+            
+            .permission-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- ================= MENSAJE DE PERMISOS ================= -->
+    <div id="permission-message">
+        <div class="permission-box">
+            <div class="permission-icon">📱</div>
+            <h2 class="permission-title">Permiso de Cámara Requerido</h2>
+            <p class="permission-text">
+                Esta aplicación de Realidad Aumentada necesita acceso a tu cámara para poder escanear los imanes turísticos y mostrar contenido interactivo.
+            </p>
+            <p class="permission-text">
+                Por favor, permite el acceso a la cámara cuando tu navegador te lo solicite.
+            </p>
+            <div class="permission-buttons">
+                <button class="permission-btn" id="allow-permission-btn">PERMITIR CÁMARA</button>
+                <button class="permission-btn" id="deny-permission-btn">NO PERMITIR</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= PANTALLA DE CARGA ================= -->
     <div id="loading-screen">
         <div class="flags-container" id="flagsContainer"></div>
@@ -470,7 +614,7 @@
 
     <!-- ================= CONTROLES AR ================= -->
     <div id="ar-controls">
-        <button class="ar-control-btn" id="sound-btn" title="Sonido">🔇</button>
+        <button class="ar-control-btn" id="sound-btn" title="Efectos de sonido">🔊</button>
         <button class="ar-control-btn" id="help-btn" title="Ayuda">?</button>
     </div>
 
@@ -483,27 +627,91 @@
         // ================= VARIABLES GLOBALES =================
         let arVideo = null;
         let arTarget = null;
-        let soundEnabled = false;
+        let audioContext = null;
+        let soundEnabled = true;
+        let permissionGranted = false;
+
+        // ================= SONIDOS ELECTRÓNICOS =================
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('🎵 Contexto de audio inicializado');
+            }
+        }
+
+        function playSound(frequency, duration, type = 'sine', volume = 0.3) {
+            if (!soundEnabled || !audioContext) return;
+            
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                oscillator.type = type;
+                
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (error) {
+                console.log('⚠️ Error reproduciendo sonido:', error);
+            }
+        }
+
+        // Sonidos específicos
+        function playButtonSound() {
+            playSound(800, 0.1, 'sine', 0.2);
+        }
+
+        function playDetectionSound() {
+            playSound(1200, 0.3, 'triangle', 0.3);
+        }
+
+        function playSuccessSound() {
+            // Sonido ascendente de éxito
+            const now = audioContext.currentTime;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, now);
+            oscillator.frequency.exponentialRampToValueAtTime(1600, now + 0.5);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.3, now + 0.1);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+            
+            oscillator.start(now);
+            oscillator.stop(now + 0.5);
+        }
+
+        function playErrorSound() {
+            playSound(400, 0.2, 'sawtooth', 0.2);
+        }
 
         // ================= CREAR BANDERAS DECORATIVAS =================
         function createFlags() {
             const container = document.getElementById('flagsContainer');
             const flagTypes = ['argentina', 'brasil', 'paraguay'];
             
-            // Crear 15 banderas
             for (let i = 0; i < 15; i++) {
                 const flag = document.createElement('div');
                 flag.className = `flag-item flag-${flagTypes[i % 3]}`;
                 
-                // Posición aleatoria
                 flag.style.left = `${Math.random() * 100}%`;
                 
-                // Tamaño aleatorio
                 const size = 40 + Math.random() * 40;
                 flag.style.width = `${size}px`;
                 flag.style.height = `${size * 0.66}px`;
                 
-                // Animación personalizada
                 flag.style.animationDuration = `${15 + Math.random() * 30}s`;
                 flag.style.animationDelay = `${Math.random() * 10}s`;
                 
@@ -520,7 +728,6 @@
             let progress = 0;
             
             const interval = setInterval(() => {
-                // Incremento variable para parecer real
                 let increment;
                 if (progress < 70) {
                     increment = Math.random() * 3 + 2;
@@ -536,7 +743,6 @@
                 progressBar.style.width = progress + '%';
                 percentage.textContent = Math.round(progress) + '%';
                 
-                // Efecto visual
                 if (progress % 20 === 0) {
                     percentage.style.transform = 'scale(1.1)';
                     setTimeout(() => {
@@ -547,32 +753,169 @@
                 if (progress >= 100) {
                     clearInterval(interval);
                     
-                    // Mostrar botón de inicio con retardo
                     setTimeout(() => {
                         startBtn.style.display = 'block';
                         startBtn.style.animation = 'fadeIn 0.5s forwards';
-                        
-                        // Cambiar texto final
                         percentage.textContent = '¡LISTO!';
                         percentage.style.color = '#00ff88';
+                        
+                        // Sonido de carga completa
+                        if (soundEnabled) {
+                            playSuccessSound();
+                        }
                     }, 500);
                 }
             }, 100);
         }
 
+        // ================= SOLICITAR PERMISOS =================
+        function requestCameraPermission() {
+            return new Promise((resolve) => {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    console.log('⚠️ API de cámara no disponible');
+                    resolve(false);
+                    return;
+                }
+                
+                navigator.mediaDevices.getUserMedia({ 
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                })
+                .then(stream => {
+                    console.log('✅ Permiso de cámara concedido');
+                    // Detener el stream inmediatamente - A-Frame lo manejará
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    // Inicializar audio después de obtener permisos
+                    initAudio();
+                    
+                    // Sonido de confirmación
+                    playSuccessSound();
+                    
+                    permissionGranted = true;
+                    resolve(true);
+                })
+                .catch(error => {
+                    console.log('❌ Error al solicitar permisos:', error);
+                    
+                    // Mostrar mensaje de error
+                    const permissionBox = document.querySelector('.permission-box');
+                    const originalHTML = permissionBox.innerHTML;
+                    
+                    permissionBox.innerHTML = `
+                        <div class="permission-icon">❌</div>
+                        <h2 class="permission-title">Permiso Denegado</h2>
+                        <p class="permission-text">
+                            No se pudo acceder a la cámara. Por favor:
+                        </p>
+                        <ol style="text-align: left; color: rgba(255,255,255,0.9); margin: 20px 0;">
+                            <li>Verifica que has permitido el acceso a la cámara</li>
+                            <li>Asegúrate de que otra app no esté usando la cámara</li>
+                            <li>Reinicia la aplicación</li>
+                        </ol>
+                        <div class="permission-buttons">
+                            <button class="permission-btn" id="retry-permission-btn">REINTENTAR</button>
+                            <button class="permission-btn" id="cancel-permission-btn">CANCELAR</button>
+                        </div>
+                    `;
+                    
+                    document.getElementById('retry-permission-btn').addEventListener('click', () => {
+                        permissionBox.innerHTML = originalHTML;
+                        setupPermissionButtons();
+                        requestCameraPermission().then(resolve);
+                    });
+                    
+                    document.getElementById('cancel-permission-btn').addEventListener('click', () => {
+                        hidePermissionMessage();
+                        resolve(false);
+                    });
+                    
+                    playErrorSound();
+                    resolve(false);
+                });
+            });
+        }
+
+        function showPermissionMessage() {
+            document.getElementById('permission-message').style.display = 'flex';
+        }
+
+        function hidePermissionMessage() {
+            document.getElementById('permission-message').style.display = 'none';
+        }
+
+        function setupPermissionButtons() {
+            document.getElementById('allow-permission-btn').addEventListener('click', () => {
+                playButtonSound();
+                requestCameraPermission().then(granted => {
+                    if (granted) {
+                        hidePermissionMessage();
+                        startARExperience();
+                    }
+                });
+            });
+            
+            document.getElementById('deny-permission-btn').addEventListener('click', () => {
+                playButtonSound();
+                hidePermissionMessage();
+                
+                // Mostrar mensaje de error
+                const loadingContent = document.querySelector('.loading-content');
+                const originalHTML = loadingContent.innerHTML;
+                
+                loadingContent.innerHTML = `
+                    <div class="logo-ar" style="background: linear-gradient(45deg, #ff416c, #ff4b2b);">
+                        <div class="logo-inner">!</div>
+                    </div>
+                    <h2 class="title-main">Cámara Requerida</h2>
+                    <p class="title-sub">
+                        Esta experiencia AR requiere acceso a la cámara para funcionar.
+                    </p>
+                    <button id="retry-load-btn" style="
+                        padding: 15px 40px;
+                        background: linear-gradient(45deg, #00b09b, #96c93d);
+                        color: white;
+                        border: none;
+                        border-radius: 50px;
+                        font-size: 1.1rem;
+                        font-weight: bold;
+                        cursor: pointer;
+                        margin-top: 20px;
+                        box-shadow: 0 8px 25px rgba(0, 176, 155, 0.4);
+                    ">
+                        REINTENTAR
+                    </button>
+                `;
+                
+                document.getElementById('retry-load-btn').addEventListener('click', () => {
+                    playButtonSound();
+                    loadingContent.innerHTML = originalHTML;
+                    document.getElementById('start-btn').style.display = 'block';
+                    document.getElementById('start-btn').addEventListener('click', showPermissionMessage);
+                });
+            });
+        }
+
         // ================= INICIAR EXPERIENCIA AR =================
         function startARExperience() {
+            if (!permissionGranted) {
+                console.log('❌ Permiso no concedido');
+                showPermissionMessage();
+                return;
+            }
+            
             const loadingScreen = document.getElementById('loading-screen');
             const arSceneContainer = document.getElementById('ar-scene');
             
-            // Efecto de desvanecimiento
             loadingScreen.style.opacity = '0';
             loadingScreen.style.transition = 'opacity 0.5s ease';
             
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 
-                // Crear escena AR
                 arSceneContainer.innerHTML = `
                     <a-scene 
                         mindar-image="imageTargetSrc: ./marker.mind; autoStart: true; uiScanning: no; uiLoading: no; uiError: no;" 
@@ -619,16 +962,13 @@
                     </a-scene>
                 `;
                 
-                // Mostrar escena AR
                 setTimeout(() => {
                     arSceneContainer.style.opacity = '1';
                     
-                    // Mostrar controles
                     document.getElementById('exit-btn').style.display = 'flex';
                     document.getElementById('ar-controls').style.display = 'flex';
                     document.getElementById('detection-indicator').style.display = 'block';
                     
-                    // Configurar eventos AR
                     setTimeout(() => {
                         setupAREvents();
                     }, 1000);
@@ -653,19 +993,16 @@
                 arTarget.addEventListener('targetFound', () => {
                     console.log('🎯 Marcador detectado');
                     
-                    // Actualizar indicador
+                    // Sonido de detección
+                    playDetectionSound();
+                    
                     detectionIndicator.innerHTML = '✅ Marcador detectado - Video activo';
                     detectionIndicator.style.borderColor = '#4CAF50';
                     
-                    // Reproducir video
-                    arVideo.muted = !soundEnabled;
-                    arVideo.play().then(() => {
-                        console.log('▶️ Video en reproducción');
-                    }).catch(err => {
+                    arVideo.muted = true;
+                    arVideo.play().catch(err => {
                         console.log('⚠️ Error reproduciendo video:', err);
-                        // Intentar con mute
-                        arVideo.muted = true;
-                        arVideo.play();
+                        setTimeout(() => arVideo.play(), 300);
                     });
                 });
                 
@@ -673,37 +1010,31 @@
                 arTarget.addEventListener('targetLost', () => {
                     console.log('❌ Marcador perdido');
                     
-                    // Actualizar indicador
                     detectionIndicator.innerHTML = '🔍 Buscando marcador...';
                     detectionIndicator.style.borderColor = '#FF9800';
                     
-                    // Pausar video
                     arVideo.pause();
                 });
                 
                 // Botón de sonido
                 soundBtn.addEventListener('click', () => {
+                    playButtonSound();
                     soundEnabled = !soundEnabled;
-                    
-                    if (arVideo) {
-                        arVideo.muted = !soundEnabled;
-                    }
-                    
                     soundBtn.innerHTML = soundEnabled ? '🔊' : '🔇';
                     soundBtn.style.background = soundEnabled ? 
                         'rgba(46, 204, 113, 0.9)' : 'rgba(52, 152, 219, 0.9)';
                     
-                    // Efecto visual
                     soundBtn.style.transform = 'scale(0.9)';
                     setTimeout(() => {
                         soundBtn.style.transform = 'scale(1)';
                     }, 100);
                     
-                    console.log(soundEnabled ? '🔊 Sonido activado' : '🔇 Sonido desactivado');
+                    console.log(soundEnabled ? '🔊 Sonidos activados' : '🔇 Sonidos desactivados');
                 });
                 
                 // Botón de ayuda
                 helpBtn.addEventListener('click', () => {
+                    playButtonSound();
                     detectionIndicator.innerHTML = '📱 Apunta la cámara al imán turístico';
                     detectionIndicator.style.borderColor = '#3498db';
                     
@@ -732,26 +1063,23 @@
 
         // ================= FINALIZAR EXPERIENCIA =================
         function finalizarExperiencia() {
-            // Pausar video si existe
+            playButtonSound();
+            
             if (arVideo) {
                 arVideo.pause();
                 arVideo.currentTime = 0;
             }
             
-            // Ocultar controles AR
             document.getElementById('exit-btn').style.display = 'none';
             document.getElementById('ar-controls').style.display = 'none';
             document.getElementById('detection-indicator').style.display = 'none';
             
-            // Ocultar escena AR
             const arSceneContainer = document.getElementById('ar-scene');
             arSceneContainer.style.opacity = '0';
             
             setTimeout(() => {
-                // Limpiar escena AR
                 arSceneContainer.innerHTML = '';
                 
-                // Mostrar pantalla de carga
                 const loadingScreen = document.getElementById('loading-screen');
                 loadingScreen.style.display = 'flex';
                 loadingScreen.style.opacity = '0';
@@ -760,13 +1088,11 @@
                     loadingScreen.style.transition = 'opacity 0.8s ease';
                     loadingScreen.style.opacity = '1';
                     
-                    // Reiniciar carga
                     document.getElementById('progressBar').style.width = '0%';
                     document.getElementById('percentage').textContent = '0%';
                     document.getElementById('percentage').style.color = 'white';
                     document.getElementById('start-btn').style.display = 'none';
                     
-                    // Volver a simular carga
                     simulateLoading();
                 }, 50);
                 
@@ -779,6 +1105,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Iniciando Experiencia AR para Imanes Turísticos');
             
+            // Inicializar audio primero
+            initAudio();
+            
+            // Configurar botones de permisos
+            setupPermissionButtons();
+            
             // Crear banderas decorativas
             createFlags();
             
@@ -786,12 +1118,15 @@
             simulateLoading();
             
             // Configurar botón de inicio
-            document.getElementById('start-btn').addEventListener('click', startARExperience);
+            document.getElementById('start-btn').addEventListener('click', () => {
+                playButtonSound();
+                showPermissionMessage();
+            });
             
             // Configurar botón de finalizar
             document.getElementById('exit-btn').addEventListener('click', finalizarExperiencia);
             
-            // Configurar atajo de teclado (Escape para salir)
+            // Configurar atajo de teclado
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     finalizarExperiencia();
@@ -800,6 +1135,11 @@
             
             // Ajustar altura para móviles
             document.body.style.height = window.innerHeight + 'px';
+            
+            // Mostrar mensaje de bienvenida
+            setTimeout(() => {
+                playSuccessSound();
+            }, 1000);
         });
 
         // ================= MANEJAR REDIMENSIONAMIENTO =================
@@ -808,4 +1148,4 @@
         });
     </script>
 </body>
-</html>  
+</html>
